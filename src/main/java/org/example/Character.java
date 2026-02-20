@@ -1,18 +1,22 @@
 package org.example;
-
-public abstract class Character {
+interface Purchasable {
+    int getPrice();
+}
+public abstract class Character implements Purchasable {
     private String name;
     private int actuHp;
     private int maxiHp;
+    private int price;
     private int basePw;
     private Equipment equip;
     public Character(){}
-    public Character(String name, int actuHp, int maxiHp, int basePw, Equipment equip){
+    public Character(String name, int maxiHp, int basePw, Equipment equip, int price){
         this.name = name;
-        this.actuHp = actuHp;
+        this.actuHp = maxiHp;
         this.maxiHp = maxiHp;
         this.basePw = basePw;
         this.equip = equip;
+        this.price = price;
     }
     public String getName() {
         return name;
@@ -66,38 +70,17 @@ public abstract class Character {
         this.actuHp -= dmg;
         if(!alive()) actuHp = 0;
     }
-}
-class Equipment{
-    private String name;
-    private int bonusDmg;
-    public Equipment(){}
-    public Equipment(String name, int bonusDmg) {
-        this.name = name;
-        this.bonusDmg = bonusDmg;
-    }
-
-    public int getBonusDmg() {
-        return bonusDmg;
-    }
-
-    public void setBonusDmg(int bonusDmg) {
-        this.bonusDmg = bonusDmg;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
+    @Override
+    public int getPrice(){
+        return price;
     }
 }
 class RageWarrior extends Character{
     private int rage;
     private boolean bonusHit = false;
     public RageWarrior(){}
-    public RageWarrior(String name, int actuHp, int maxiHp, int basePw, Equipment equip){
-        super(name,  actuHp,  maxiHp,  basePw,  equip);
+    public RageWarrior(String name, int maxiHp, int basePw, Equipment equip, int price){
+        super(name, maxiHp, basePw,  equip, price);
         this.rage = 0;
     }
     public int getRage() {
@@ -139,8 +122,8 @@ class RageWarrior extends Character{
 class MageWarrior extends Character{
     private int actuMana;
     public MageWarrior(){}
-    public MageWarrior(String name, int actuHp, int maxiHp, int basePw, int actuMana, Equipment equip){
-        super(name,  actuHp,  maxiHp,  basePw,  equip);
+    public MageWarrior(String name, int maxiHp, int basePw, int actuMana, Equipment equip, int price){
+        super(name,  maxiHp,  basePw,  equip, price);
         this.actuMana = actuMana;
     }
 
@@ -173,5 +156,102 @@ class MageWarrior extends Character{
         } else{
             System.out.println("ENEM. ACTUAL HP AFTER DMG = " + enem.getActuHp());
         }
+    }
+}
+class Equipment implements Purchasable{
+    private String name;
+    private int bonusDmg;
+    private int price;
+    public Equipment(){}
+    public Equipment(String name, int bonusDmg, int price) {
+        this.name = name;
+        this.bonusDmg = bonusDmg;
+        this.price = price;
+    }
+
+    public int getBonusDmg() {
+        return bonusDmg;
+    }
+
+    public void setBonusDmg(int bonusDmg) {
+        this.bonusDmg = bonusDmg;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setPrice(int price) {
+        this.price = price;
+    }
+
+    @Override
+    public int getPrice(){
+        return price;
+    }
+}
+class Item implements Purchasable{
+    private String name;
+    private String function;
+    private int price;
+    public Item(){}
+    public Item(String name, String function, int price){
+        this.name = name;
+        this.function = function;
+        this.price = price;
+    }
+    @Override
+    public int getPrice() {
+        return price;
+    }
+
+    public String getFunction() {
+        return function;
+    }
+
+    public void setFunction(String function) {
+        this.function = function;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+}
+class Heal extends Item{
+    private int heal;
+    public Heal(){}
+    public Heal(String name, String function, int price, int heal){
+        super(name, function, price);
+        this.heal = heal;
+    }
+
+    public int getHeal() {
+        return heal;
+    }
+
+    public void setHeal(int heal) {
+        this.heal = heal;
+    }
+}
+class Poison extends Item{
+    private int dmg;
+    public Poison(){}
+    public Poison(String name, String function, int price, int dmg){
+        super(name, function, price);
+        this.dmg = dmg;
+    }
+    public int getDmg() {
+        return dmg;
+    }
+    public void setDmg(int dmg) {
+        this.dmg = dmg;
     }
 }
