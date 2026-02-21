@@ -60,7 +60,7 @@ public abstract class Character implements Purchasable {
         }
     }
 
-    public boolean alive(){
+    public boolean isAlive(){
         return this.actuHp>0;
     }
 
@@ -68,7 +68,7 @@ public abstract class Character implements Purchasable {
 
     public void reciDmg(int dmg){
         this.actuHp -= dmg;
-        if(!alive()) actuHp = 0;
+        if(!isAlive()) actuHp = 0;
     }
     @Override
     public int getPrice(){
@@ -106,7 +106,7 @@ class RageWarrior extends Character{
         }
         System.out.println("ENEM. ACTUAL HP: " + enem.getActuHp());
         enem.reciDmg(totalDmg);
-        if(!enem.alive()){
+        if(!enem.isAlive()){
             System.out.println("ENEM. DIED. ");
         } else{
             System.out.println("ENEM. ACTUAL HP AFTER DMG = " + enem.getActuHp());
@@ -151,7 +151,7 @@ class MageWarrior extends Character{
         }
         System.out.println("ENEM. ACTUAL HP: " + enem.getActuHp());
         enem.reciDmg(totalDmg);
-        if(!enem.alive()){
+        if(!enem.isAlive()){
             System.out.println("ENEM. DIED. ");
         } else{
             System.out.println("ENEM. ACTUAL HP AFTER DMG = " + enem.getActuHp());

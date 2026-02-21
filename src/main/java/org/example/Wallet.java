@@ -14,9 +14,9 @@ public class Wallet {
     }
     public boolean deductBalance(int amount){
         if(amount>0 && balance>=amount){
-            balance-=amount;
+            balance-=amount; //puto
             System.out.println("Successful.");
-            return true;
+            return true;//tralalero tralala
         }
         else {
             System.out.println("Not enough balance. ");
