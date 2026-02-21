@@ -5,18 +5,20 @@ interface Purchasable {
 public abstract class Character implements Purchasable {
     private String name;
     private int actuHp;
+    private double speed;
     private int maxiHp;
     private int price;
     private int basePw;
     private Equipment equip;
     public Character(){}
-    public Character(String name, int maxiHp, int basePw, Equipment equip, int price){
+    public Character(String name, int maxiHp, int basePw, Equipment equip, int price, double speed){
         this.name = name;
         this.actuHp = maxiHp;
         this.maxiHp = maxiHp;
         this.basePw = basePw;
         this.equip = equip;
         this.price = price;
+        this.speed = speed;
     }
     public String getName() {
         return name;
@@ -61,7 +63,7 @@ public abstract class Character implements Purchasable {
     }
 
     public boolean isAlive(){
-        return this.actuHp>0;
+        return getActuHp()>0;
     }
 
     public abstract void attack(Character enem);
@@ -79,8 +81,8 @@ class RageWarrior extends Character{
     private int rage;
     private boolean bonusHit = false;
     public RageWarrior(){}
-    public RageWarrior(String name, int maxiHp, int basePw, Equipment equip, int price){
-        super(name, maxiHp, basePw,  equip, price);
+    public RageWarrior(String name, int maxiHp, int basePw, Equipment equip, int price, double speed){
+        super(name, maxiHp, basePw,  equip, price, speed);
         this.rage = 0;
     }
     public int getRage() {
@@ -122,8 +124,8 @@ class RageWarrior extends Character{
 class MageWarrior extends Character{
     private int actuMana;
     public MageWarrior(){}
-    public MageWarrior(String name, int maxiHp, int basePw, int actuMana, Equipment equip, int price){
-        super(name,  maxiHp,  basePw,  equip, price);
+    public MageWarrior(String name, int maxiHp, int basePw, int actuMana, Equipment equip, int price, double speed){
+        super(name,  maxiHp,  basePw,  equip, price, speed);
         this.actuMana = actuMana;
     }
 
@@ -134,8 +136,6 @@ class MageWarrior extends Character{
     public void setActuMana(int actuMana) {
         this.actuMana = actuMana;
     }
-
-
     @Override
     public void attack(Character enem) {
         int bonusDmg = getEquip().getBonusDmg();
