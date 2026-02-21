@@ -21,8 +21,8 @@ public class Main {
 
         // Usamos los 5 argumentos que tiene tu constructor actual.
         // Nota: Como no pusiste el precio en el constructor de RageWarrior, el Shop leera el precio como 0.
-        heroes.add(new RageWarrior("Brbaro Novato", 100, 10, armaBasica, 300));
-        heroes.add(new MageWarrior("Mago Aprendiz", 80, 5, 50, armaBasica, 250));
+        heroes.add(new RageWarrior("Brbaro Novato", 100, 10, armaBasica, 300,10.6));
+        heroes.add(new MageWarrior("Mago Aprendiz", 80, 5, 50, armaBasica, 250,40));
 
         Shop tienda = new Shop(heroes, armas, items);
         Player jugador = new Player("Jugador 1");
@@ -89,6 +89,7 @@ public class Main {
                     }
 
                     // Paso A: Elegir el heroe
+                    //xdxd.
                     System.out.println("Selecciona un heroe:");
                     for (int i = 0; i < jugador.getOwnedHeroes().size(); i++) {
                         Character h = jugador.getOwnedHeroes().get(i);
