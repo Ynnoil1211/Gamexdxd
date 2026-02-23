@@ -1,75 +1,133 @@
 package org.example;
 
 public class Equipment implements Purchasable{
-        private String name;
-        private int bonusDmg;
-        private int price;
-        public Equipment(){}
-        public Equipment(String name, int bonusDmg, int price) {
-            this.name = name;
-            this.bonusDmg = bonusDmg;
-            this.price = price;
-        }
+    private String name;
+    private double bonusHp;
+    private double bonusDmg;
+    private double bonusMagicDmg;
+    private double bonusDefense;
+    private double bonusMagicDefense;
+    private double bonusSpeed;
+    private double bonusCritChance;
+    private double bonusDodgeChance;
+    private double bonusHpRegen;
+    private double bonusManaRegen;
 
-        public int getBonusDmg() {
-            return bonusDmg;
-        }
+    private int price;
+    public Equipment(){}
 
-        public void setBonusDmg(int bonusDmg) {
-            this.bonusDmg = bonusDmg;
-        }
+    public Equipment(String name, double bonusHp, double bonusDmg,
+                     double bonusMagicDmg, double bonusDefense, double bonusMagicDefense,
+                     double bonusSpeed, double bonusCritChance, double bonusDodgeChance,
+                     double bonusHpRegen, double bonusManaRegen, int price) {
+        this.name = name;
+        this.bonusHp = bonusHp;
+        this.bonusDmg = bonusDmg;
+        this.bonusMagicDmg = bonusMagicDmg;
+        this.bonusDefense = bonusDefense;
+        this.bonusMagicDefense = bonusMagicDefense;
+        this.bonusSpeed = bonusSpeed;
+        this.bonusCritChance = bonusCritChance;
+        this.bonusDodgeChance = bonusDodgeChance;
+        this.bonusHpRegen = bonusHpRegen;
+        this.bonusManaRegen = bonusManaRegen;
+        this.price = price;
+    }
 
-        public String getName() {
-            return name;
-        }
+    public String getName() {
+        return name;
+    }
 
-        public void setName(String name) {
-            this.name = name;
-        }
+    public double getBonusHp() {
+        return bonusHp;
+    }
 
-        public void setPrice(int price) {
-            this.price = price;
-        }
+    public double getBonusDmg() {
+        return bonusDmg;
+    }
 
-        @Override
-        public int getPrice(){
+    public double getBonusMagicDmg() {
+        return bonusMagicDmg;
+    }
+
+    public double getBonusDefense() {
+        return bonusDefense;
+    }
+
+    public double getBonusMagicDefense() {
+        return bonusMagicDefense;
+    }
+
+    public double getBonusSpeed() {
+        return bonusSpeed;
+    }
+
+    public double getBonusCritChance() {
+        return bonusCritChance;
+    }
+
+    public double getBonusDodgeChance() {
+        return bonusDodgeChance;
+    }
+
+    public double getBonusHpRegen() {
+        return bonusHpRegen;
+    }
+
+    public double getBonusManaRegen() {
+        return bonusManaRegen;
+    }
+
+    @Override
+    public int getPrice(){
             return price;
         }
-        public org.example.Equipment clon() {
-            return new org.example.Equipment(this.getName(), this.getBonusDmg(), this.getPrice());
-        }
+    public Equipment clon() {
+        return new Equipment(this.name = getName();
+        this.bonusHp = getBonusHp();
+        this.bonusDmg = getBonusDmg();
+        this.bonusMagicDmg = getBonusMagicDmg();
+        this.bonusDefense = getBonusDefense();
+        this.bonusMagicDefense = getBonusMagicDefense();
+        this.bonusSpeed = getBonusSpeed();
+        this.bonusCritChance = getBonusCritChance();
+        this.bonusDodgeChance = getBonusDodgeChance();
+        this.bonusHpRegen = getBonusManaRegen();
+        this.bonusManaRegen = getBonusManaRegen();
+        this.price = getPrice(););
     }
-    class Item implements Purchasable{
-        private String name;
-        private String function;
-        private int price;
-        public Item(){}
-        public Item(String name, String function, int price){
-            this.name = name;
-            this.function = function;
-            this.price = price;
-        }
-        @Override
-        public int getPrice() {
-            return price;
-        }
-
-        public String getFunction() {
-            return function;
-        }
-
-        public void setFunction(String function) {
-            this.function = function;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
+}
+class Item implements Purchasable{
+    private String name;
+    private String function;
+    private int price;
+    public Item(){}
+    public Item(String name, String function, int price){
+        this.name = name;
+        this.function = function;
+        this.price = price;
     }
+    @Override
+    public int getPrice() {
+        return price;
+    }
+
+    public String getFunction() {
+        return function;
+    }
+
+    public void setFunction(String function) {
+        this.function = function;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+}
     class Heal extends Item{
         private int heal;
         public Heal(){}
