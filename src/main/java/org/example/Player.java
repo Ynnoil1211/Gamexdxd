@@ -66,7 +66,8 @@ public class Player {
         }
     }
     public void addHero(Character hero){
-        this.ownedHeroes.add(hero);
+        this.ownedHeroes.add(hero.clon());
+//        this.ownedHeroes.add(hero);
         System.out.println("Success: " + hero.getName() + " has joined your party");
     }
 }
