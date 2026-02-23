@@ -83,18 +83,18 @@ public class Equipment implements Purchasable{
             return price;
         }
     public Equipment clon() {
-        return new Equipment(this.name = getName();
-        this.bonusHp = getBonusHp();
-        this.bonusDmg = getBonusDmg();
-        this.bonusMagicDmg = getBonusMagicDmg();
-        this.bonusDefense = getBonusDefense();
-        this.bonusMagicDefense = getBonusMagicDefense();
-        this.bonusSpeed = getBonusSpeed();
-        this.bonusCritChance = getBonusCritChance();
-        this.bonusDodgeChance = getBonusDodgeChance();
-        this.bonusHpRegen = getBonusManaRegen();
-        this.bonusManaRegen = getBonusManaRegen();
-        this.price = getPrice(););
+        return new Equipment(this.name = getName(),
+        this.bonusHp = getBonusHp(),
+        this.bonusDmg = getBonusDmg(),
+        this.bonusMagicDmg = getBonusMagicDmg(),
+        this.bonusDefense = getBonusDefense(),
+        this.bonusMagicDefense = getBonusMagicDefense(),
+        this.bonusSpeed = getBonusSpeed(),
+        this.bonusCritChance = getBonusCritChance(),
+        this.bonusDodgeChance = getBonusDodgeChance(),
+        this.bonusHpRegen = getBonusManaRegen(),
+        this.bonusManaRegen = getBonusManaRegen(),
+        this.price = getPrice());
     }
 }
 class Item implements Purchasable{
@@ -129,18 +129,18 @@ class Item implements Purchasable{
     }
 }
     class Heal extends Item{
-        private int heal;
+        private double heal;
         public Heal(){}
-        public Heal(String name, String function, int price, int heal){
+        public Heal(String name, String function, int price, double heal){
             super(name, function, price);
             this.heal = heal;
         }
 
-        public int getHeal() {
+        public double getHeal() {
             return heal;
         }
 
-        public void setHeal(int heal) {
+        public void setHeal(double heal) {
             this.heal = heal;
         }
     }
