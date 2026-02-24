@@ -147,7 +147,8 @@ class RageWarrior extends Character{
         this.rage = 0;
     }
 
-    public RageWarrior(String name, double maxiHp, double basePw, double baseMagicPw, double baseDefense, double baseMagicDefense, double criticChance, double speed, double dodge, int price, Equipment equip) {
+    public RageWarrior(String name, double maxiHp, double basePw, double baseMagicPw, double baseDefense, double baseMagicDefense,
+                       double criticChance, double speed, double dodge, int price, Equipment equip) {
         super(name, maxiHp, basePw, baseMagicPw, baseDefense, baseMagicDefense, criticChance, speed, dodge, price, equip);
         this.rage = 0;
     }
@@ -202,23 +203,30 @@ class RageWarrior extends Character{
 
 
 }
+
+
 class MageWarrior extends Character{
     private int actuMana;
-    private static final double randHp = 500;
-    private static final double randBasePw = 100;
-    private static final double randMagicPw = 0;
-    private static final double randBaseDefence = 150;
-    private static final double randMagicDefense = 125;
-    private static final double randCriticChance = 0.025;
-    private static final double randSpeed = 12;
-    private static final double randDodge = 0.05;
+    private int maxMana;
+    private static final double randHp = 400;
+    private static final int randMaxMana = 100;
+    private static final double randBasePw = 10;
+    private static final double randMagicPw = 100;
+    private static final double randBaseDefence = 50;
+    private static final double randMagicDefense = 60;
+    private static final double randCriticChance = 0.05;
+    private static final double randSpeed = 15;
+    private static final double randDodge = 0.1;
     private static final int randPrice = 300;
 
     public MageWarrior(){}
     public MageWarrior(String name, Equipment equip){
         Random rand = new Random();
         double hpVariance = (double) (randHp * 0.15);
-        double maxiHp = randHp + (rand.nextDouble((hpVariance * 2) + 1) - hpVariance);
+        int maxiHp = randHp + (rand.nextDouble((hpVariance * 2) + 1) - hpVariance);
+
+        int manaVariance = (int) (randMaxMana * 0.15);
+        int maxManaRandom = randMaxMana + (rand.nextInt((manaVariance * 2) + 1) - manaVariance);
 
         double pwVariance = (double) (randBasePw * 0.15);
         double basePw = randBasePw + (rand.nextDouble((pwVariance * 2) + 1) - pwVariance);
@@ -239,20 +247,22 @@ class MageWarrior extends Character{
         double speed = randSpeed + (rand.nextDouble((speedVariance * 2) + 1) - speedVariance);
 
         double dodgeVariance = (double) (randDodge * 0.20);
-        double dodge = randDodge + (rand.nextDouble((speedVariance * 2) + 1) - speedVariance);
+        double dodge = randDodge + (rand.nextDouble((dodgeVariance * 2) + 1) - dodgeVariance);
 
         int priceVariance = (int) (randPrice * 0.15);
         int price = randPrice + (rand.nextInt((priceVariance * 2) + 1) - priceVariance);
 
         super(name, maxiHp, basePw, baseMagicPw, baseDefense, baseMagicDefense, criticChance, speed, dodge, price, equip);
-        this.actuMana = 100;
-    }
+        this.maxMana = maxManaRandom;
+        this.actuMana = maxMana;
 
-    public MageWarrior(String name, double maxiHp, double basePw, double baseMagicPw, double baseDefense, double baseMagicDefense, double criticChance, double speed, double dodge, int price, Equipment equip) {
+    }
+    public MageWarrior(String name, double maxiHp, double basePw, double baseMagicPw, double baseDefense,
+                       double baseMagicDefense, double criticChance, double speed, double dodge, int price, Equipment equip) {
         super(name, maxiHp, basePw, baseMagicPw, baseDefense, baseMagicDefense, criticChance, speed, dodge, price, equip);
-        this.actuMana = 100;
+        this.maxMana = maxManaRandom;
+        this.actuMana = maxMana;
     }
-
     @Override
     public Character clon(){
         Equipment equipmentCloned = null;
