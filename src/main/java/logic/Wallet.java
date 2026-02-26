@@ -1,4 +1,5 @@
-package org.example;
+package logic;
+import vista.*;
 
 public class Wallet {
     private int balance;

@@ -1,5 +1,5 @@
-package org.example;
-
+package logic;
+import vista.*;
 public class Equipment implements Purchasable{
     private String name;
     private double bonusHp;

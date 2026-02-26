@@ -1,10 +1,8 @@
-package org.example;
+package logic;
+import vista.*;
 import java.util.Random;
 
-interface Purchasable {
-    int getPrice();
-}
-public abstract class Character implements Purchasable {
+public abstract class Character implements Purchasable, Ability {
     private String name;
     private double actuHp;
     private double maxiHp;
@@ -17,7 +15,7 @@ public abstract class Character implements Purchasable {
     private int price;
     private Equipment equip;
     private double speed;
-
+    private Ability ability;
     private boolean isEnemy;
     public Character(){}
     public Character(String name, double maxiHp, double basePw, double baseMagicPw, double baseDefense, double baseMagicDefense, double criticChance, double speed, double dodge, int price, Equipment equip){
@@ -223,7 +221,7 @@ class MageWarrior extends Character{
     public MageWarrior(String name, Equipment equip){
         Random rand = new Random();
         double hpVariance = (double) (randHp * 0.15);
-        int maxiHp = randHp + (rand.nextDouble((hpVariance * 2) + 1) - hpVariance);
+        double maxiHp = randHp + (rand.nextDouble((hpVariance * 2) + 1) - hpVariance);
 
         int manaVariance = (int) (randMaxMana * 0.15);
         int maxManaRandom = randMaxMana + (rand.nextInt((manaVariance * 2) + 1) - manaVariance);

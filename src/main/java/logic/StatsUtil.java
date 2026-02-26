@@ -1,5 +1,5 @@
-package org.example;
-
+package logic;
+import vista.*;
 public class StatsUtil {
     public static double calculateVariance(double baseValue, double percentage) {
         java.util.Random rand = new java.util.Random();
@@ -14,6 +14,11 @@ public class StatsUtil {
         return baseValue + (rand.nextInt((variance * 2) + 1) - variance);
     }
 }
+
+interface Purchasable {
+    int getPrice();
+}
+
 class CharacterFactory{
     private static final String[] MAGE_NAMES = {
             "Merlin", "Gandalf", "Vivi", "Medivh", "Jaina",

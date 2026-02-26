@@ -1,5 +1,5 @@
-package org.example;
-
+package vista;
+import logic.*;
 import java.util.ArrayList;
 
 public class Shop {

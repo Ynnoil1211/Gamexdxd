@@ -1,7 +1,6 @@
-package org.example;
-
+package logic;
+import vista.*;
 import java.util.ArrayList;
-import java.util.Calendar;
 
 public class Player {
     private String name;
