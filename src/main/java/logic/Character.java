@@ -98,80 +98,24 @@ public abstract class Character implements Purchasable, Ability {
         return isEnemy;
     }
 }
-class RageWarrior extends Character{
-    private int rage;
+
+class RageAbility implements Ability{
+    private int rage = 0;
     private boolean bonusHit = false;
-    //base datas for random
-    private static final double randHp = 500;
-    private static final double randBasePw = 100;
-    private static final double randMagicPw = 0;
-    private static final double randBaseDefence = 150;
-    private static final double randMagicDefense = 125;
-    private static final double randCriticChance = 0.025;
-    private static final double randSpeed = 12;
-    private static final double randDodge = 0.05;
-    private static final int randPrice = 300;
-    public RageWarrior(){}
-    public RageWarrior(String name, Equipment equip){
-        Random rand = new Random();
-        double hpVariance = (double) (randHp * 0.15);
-        double maxiHp = randHp + (rand.nextDouble((hpVariance * 2) + 1) - hpVariance);
 
-        double pwVariance = (double) (randBasePw * 0.15);
-        double basePw = randBasePw + (rand.nextDouble((pwVariance * 2) + 1) - pwVariance);
+    public RageAbility(){}
 
-        double magicPwVariance = (double) (randMagicPw * 0.15);
-        double baseMagicPw = randMagicPw + (rand.nextDouble((magicPwVariance * 2) + 1) - magicPwVariance);
-
-        double defenseVariance = (double) (randBaseDefence * 0.15);
-        double baseDefense = randBaseDefence + (rand.nextDouble((defenseVariance * 2) + 1) - defenseVariance);
-
-        double magicDefenseVariance = (double) (randMagicDefense * 0.15);
-        double baseMagicDefense = randMagicDefense + (rand.nextDouble((magicDefenseVariance * 2) + 1) - magicDefenseVariance);
-
-        double criticVariance = (double) (randCriticChance * 0.15);
-        double criticChance = randCriticChance + (rand.nextDouble((criticVariance * 2) + 1) - criticVariance);
-
-        double speedVariance = (double) (randSpeed * 0.15);
-        double speed = randSpeed + (rand.nextDouble((speedVariance * 2) + 1) - speedVariance);
-
-        double dodgeVariance = (double) (randDodge * 0.20);
-        double dodge = randDodge + (rand.nextDouble((speedVariance * 2) + 1) - speedVariance);
-
-        int priceVariance = (int) (randPrice * 0.15);
-        int price = randPrice + (rand.nextInt((priceVariance * 2) + 1) - priceVariance);
-
-        super(name, maxiHp, basePw, baseMagicPw, baseDefense, baseMagicDefense, criticChance, speed, dodge, price, equip);
-        this.rage = 0;
-    }
-
-    public RageWarrior(String name, double maxiHp, double basePw, double baseMagicPw, double baseDefense, double baseMagicDefense,
-                       double criticChance, double speed, double dodge, int price, Equipment equip) {
-        super(name, maxiHp, basePw, baseMagicPw, baseDefense, baseMagicDefense, criticChance, speed, dodge, price, equip);
-        this.rage = 0;
+    public RageAbility(int rage, boolean bonusHit) {
+        this.rage = rage;
+        this.bonusHit = bonusHit;
     }
 
     public int getRage() {
         return rage;
     }
-
     public void setRage(int rage) {
         this.rage = rage;
     }
-
-    @Override
-    public Character clon(){
-        Equipment equipmentCloned = null;
-        if (this.getEquip() != null){
-            equipmentCloned = this.getEquip().clon();
-        }
-        return new RageWarrior(
-                this.getName(), this.getMaxiHp(), this.getBasePw(),
-                this.getBaseMagicPw(), this.getBaseDefense(), this.getBaseMagicDefense(),
-                this.getCriticChance(), this.getSpeed(),
-                this.getDodge(), this.getPrice(), equipmentCloned);
-    }
-
     @Override
     public void attack(Character enem) {
         double bonusDmg = getEquip().getBonusDmg();
