@@ -1,5 +1,6 @@
 package vista;
 import logic.*;
+import logic.Character;
 import java.util.ArrayList;
 
 public class Shop {

@@ -1,15 +1,14 @@
 package logic;
 import vista.*;
 import java.util.Random;
-interface Ability {
-    DamageReport execute(Character attacker, Character target);
-    Ability copy();
-}
-
 public class Character implements Purchasable {
     private String name;
     private double actuHp;
     private double maxiHp;
+    private double maxMana;
+    private double actuMana;
+    private double hpRegenerate;
+    private double manaRegenerate;
     private double basePw;
     private double baseMagicPw;
     private double baseDefense;
@@ -27,6 +26,10 @@ public class Character implements Purchasable {
         this.name = builder.name;
         this.maxiHp = builder.maxiHp;
         this.actuHp = builder.maxiHp;
+        this.actuMana = builder.maxMana;
+        this.maxMana = builder.maxMana;
+        this.hpRegenerate = builder.hpRegenerate;
+        this.manaRegenerate = builder.manaRegenerate;
         this.basePw = builder.basePw;
         this.baseMagicPw = builder.baseMagicPw;
         this.baseDefense = builder.baseDefense;
@@ -44,6 +47,9 @@ public class Character implements Purchasable {
     public static class Builder{
         private String name;
         private double maxiHp = 500;
+        private int maxMana = 0;
+        private double hpRegenerate = 10;
+        private double manaRegenerate = 0;
         private double basePw = 50;
         private double baseMagicPw = 10;
         private double baseDefense = 25;
@@ -62,7 +68,9 @@ public class Character implements Purchasable {
         }
         public Builder name(String name) { this.name = name; return this; }
         public Builder maxiHp(double maxiHp) { this.maxiHp = maxiHp; return this; }
-        public Builder maxMana(int maxMana){ this.maxiHp = maxMana; return this; }
+        public Builder maxMana(int maxMana){ this.maxMana = maxMana; return this; }
+        public Builder hpRegenerate(double hpRegenerate) { this.hpRegenerate = hpRegenerate; return this; }
+        public Builder manaRegenerate(double manaRegenerate) { this.manaRegenerate = manaRegenerate; return this; }
         public Builder basePw(double basePw) { this.basePw = basePw; return this; }
         public Builder baseMagicPw(double baseMagicPw) { this.baseMagicPw = baseMagicPw; return this; }
         public Builder baseDefense(double baseDefense) { this.baseDefense = baseDefense; return this; }
@@ -90,10 +98,28 @@ public class Character implements Purchasable {
         this.actuHp -= dmg;
         if(!isAlive()) actuHp = 0;
     }
-
+    public void applyRegeneration() {
+        if (isAlive() && hpRegenerate > 0) {
+            actuHp += hpRegenerate;
+            if (actuHp > maxiHp) {
+                actuHp = maxiHp;
+            }
+        }
+    }
     @Override
     public int getPrice(){
         return price;
+    }
+
+    public Character clon() {
+        return new Builder(this.name)
+                .maxiHp(this.maxiHp).maxMana((int) this.maxMana).hpRegenerate(this.hpRegenerate)
+                .manaRegenerate(this.manaRegenerate).basePw(this.basePw).baseMagicPw(this.baseMagicPw)
+                .baseDefense(this.baseDefense).baseMagicDefense(this.baseMagicDefense)
+                .criticChance(this.criticChance).criticDamage(this.criticDamage)
+                .dodge(this.dodge).speed(this.speed).equip(this.equip)
+                .ability(this.ability != null ? this.ability.copy() : null)
+                .isEnemy(this.isEnemy).price(this.price).build();
     }
 
     public double getActuHp() {
@@ -106,6 +132,22 @@ public class Character implements Purchasable {
 
     public double getBaseMagicPw() {
         return baseMagicPw;
+    }
+
+    public double getMaxMana() {
+        return maxMana;
+    }
+
+    public double getActuMana() {
+        return actuMana;
+    }
+
+    public double getHpRegenerate() {
+        return hpRegenerate;
+    }
+
+    public double getManaRegenerate() {
+        return manaRegenerate;
     }
 
     public double getMaxiHp() {
@@ -151,75 +193,4 @@ public class Character implements Purchasable {
     public Ability getAbility() {
         return ability;
     }
-}
-
-class RageAbility implements Ability{
-    private static final double PHYS_BONUS_MULT = 1.015;
-    private static final double MAGIC_BONUS_MULT = 1.030;
-    private static final int RAGE_GAIN = 15;
-    private static final int RAGE_TOTAL = 50;
-    private int rage = 0;
-    private boolean rageHit = false;
-    public RageAbility(int rage, boolean rageHit) {
-        this.rage = rage;
-        this.rageHit = rageHit;
-    }
-    @Override
-    public DamageReport execute(Character self, Character enemy) {
-        double baseDmg = self.getBasePw();
-        double baseMagicDmg = self.getBaseMagicPw();
-        double enemDefense = enemy.getBaseDefense();
-        double enemMagicDefense = enemy.getBaseMagicDefense();
-        double bonusDmg = self.getEquip().getBonusDmg();
-        double criticChance = self.getCriticChance();
-        double criticDamage = self.getCriticDamage();
-        double dodgeChance = enemy.getDodge();
-        double parcialPhysicDmg = (baseDmg==0? 0 : (baseDmg + (bonusDmg)*PHYS_BONUS_MULT));
-        double parcialMagicDmg = (baseMagicDmg==0? 0 : (baseMagicDmg + (bonusDmg)*MAGIC_BONUS_MULT));
-        double totalPhysicDmg = parcialPhysicDmg*(100.0/(100.0+enemDefense));
-        double totalMagicDmg = parcialMagicDmg*(100.0/(100.0+enemMagicDefense));
-        double sum = totalPhysicDmg + totalMagicDmg;
-        double chanceForCritic = Math.random();
-        double chanceForDodge = Math.random();
-        boolean isCritic = (chanceForCritic<criticChance);
-        boolean isDodged = (chanceForDodge<dodgeChance);
-        double totalDmg = (isCritic?  (sum*criticDamage) : sum);
-        boolean isKill = false;
-        if(isDodged) {
-            sum = 0;
-            totalMagicDmg = 0;
-            totalDmg = 0;
-            totalPhysicDmg = 0;
-        }
-        else {
-            rage += RAGE_GAIN;
-            if (rage >= RAGE_TOTAL) {
-                rage -= RAGE_TOTAL;
-                rageHit = true;
-            }
-            if (rageHit) {
-                totalDmg *= 2;
-                rageHit = false;
-            }
-            enemy.reciDmg(totalDmg);
-            if (!enemy.isAlive()) {
-                isKill = true;
-            }
-        }
-        return new DamageReport.Builder(self.getName(),enemy.getName()).totalPhysicDmg(totalPhysicDmg)
-                .totalMagicDmg(totalMagicDmg).totalDmg(totalDmg).isDodged(isDodged).isCritic(isCritic).isKill(isKill).build();
-    }
-
-    @Override
-    public RageAbility copy() {
-        return new RageAbility(rage, rageHit);
-    }
-
-    public int getRage() {
-        return rage;
-    }
-    public void setRage(int rage) {
-        this.rage = rage;
-    }
-
 }
