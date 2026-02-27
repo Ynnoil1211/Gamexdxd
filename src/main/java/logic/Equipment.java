@@ -16,22 +16,19 @@ public class Equipment implements Purchasable{
     private int price;
     public Equipment(){}
 
-    public Equipment(String name, double bonusHp, double bonusDmg,
-                     double bonusMagicDmg, double bonusDefense, double bonusMagicDefense,
-                     double bonusSpeed, double bonusCritChance, double bonusDodgeChance,
-                     double bonusHpRegen, double bonusManaRegen, int price) {
-        this.name = name;
-        this.bonusHp = bonusHp;
-        this.bonusDmg = bonusDmg;
-        this.bonusMagicDmg = bonusMagicDmg;
-        this.bonusDefense = bonusDefense;
-        this.bonusMagicDefense = bonusMagicDefense;
-        this.bonusSpeed = bonusSpeed;
-        this.bonusCritChance = bonusCritChance;
-        this.bonusDodgeChance = bonusDodgeChance;
-        this.bonusHpRegen = bonusHpRegen;
-        this.bonusManaRegen = bonusManaRegen;
-        this.price = price;
+    public Equipment(Builder builder){
+        this.name = builder.name;
+        this.bonusHp = builder.bonusHp;
+        this.bonusDmg = builder.bonusDmg;
+        this.bonusMagicDmg = builder.bonusMagicDmg;
+        this.bonusDefense = builder.bonusDefense;
+        this.bonusMagicDefense = builder.bonusMagicDefense;
+        this.bonusSpeed = builder.bonusSpeed;
+        this.bonusCritChance = builder.bonusCritChance;
+        this.bonusDodgeChance = builder.bonus;
+        this.bonusHpRegen = builder.bonusHpRegen;
+        this.bonusManaRegen = builder.bonusManaRegen;
+        this.price = builder.price;
     }
 
     public String getName() {

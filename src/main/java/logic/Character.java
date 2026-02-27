@@ -1,8 +1,12 @@
 package logic;
 import vista.*;
 import java.util.Random;
+interface Ability {
+    DamageReport execute(Character attacker, Character target);
+    Ability copy();
+}
 
-public abstract class Character implements Purchasable, Ability {
+public class Character implements Purchasable {
     private String name;
     private double actuHp;
     private double maxiHp;
@@ -11,44 +15,86 @@ public abstract class Character implements Purchasable, Ability {
     private double baseDefense;
     private double baseMagicDefense;
     private double criticChance;
+    private double criticDamage;
     private double dodge;
-    private int price;
-    private Equipment equip;
     private double speed;
     private Ability ability;
+    private Equipment equip;
     private boolean isEnemy;
-    public Character(){}
-    public Character(String name, double maxiHp, double basePw, double baseMagicPw, double baseDefense, double baseMagicDefense, double criticChance, double speed, double dodge, int price, Equipment equip){
-        this.name = name;
-        this.actuHp = maxiHp;
-        this.maxiHp = maxiHp;
-        this.basePw = basePw;
-        this.baseMagicPw = baseMagicPw;
-        this.baseDefense = baseDefense;
-        this.baseMagicDefense = baseMagicDefense;
-        this.criticChance = criticChance;
-        this.speed = speed;
-        this.dodge = dodge;
-        this.price = price;
-        this.equip = equip;
-        this.isEnemy = false;
+    //---//
+    private int price;
+    private Character(Builder builder){
+        this.name = builder.name;
+        this.maxiHp = builder.maxiHp;
+        this.actuHp = builder.maxiHp;
+        this.basePw = builder.basePw;
+        this.baseMagicPw = builder.baseMagicPw;
+        this.baseDefense = builder.baseDefense;
+        this.baseMagicDefense = builder.baseMagicDefense;
+        this.criticChance = builder.criticChance;
+        this.criticDamage = builder.criticDamage;
+        this.dodge = builder.dodge;
+        this.speed = builder.speed;
+        this.equip = builder.equip;
+        this.isEnemy = builder.isEnemy;
+        this.price = builder.price;
+        this.ability = builder.ability;
     }
+    //---//
+    public static class Builder{
+        private String name;
+        private double maxiHp = 500;
+        private double basePw = 50;
+        private double baseMagicPw = 10;
+        private double baseDefense = 25;
+        private double baseMagicDefense = 20;
+        private double criticChance = 0.1;
+        private double criticDamage = 2.0;
+        private double dodge = 0.1;
+        private double speed = 10;
+        private Equipment equip = null;
+        private Ability ability = null;
+        private boolean isEnemy = false;
+        private int price = 0;
+
+        public Builder(String name){
+            this.name = name;
+        }
+        public Builder name(String name) { this.name = name; return this; }
+        public Builder maxiHp(double maxiHp) { this.maxiHp = maxiHp; return this; }
+        public Builder maxMana(int maxMana){ this.maxiHp = maxMana; return this; }
+        public Builder basePw(double basePw) { this.basePw = basePw; return this; }
+        public Builder baseMagicPw(double baseMagicPw) { this.baseMagicPw = baseMagicPw; return this; }
+        public Builder baseDefense(double baseDefense) { this.baseDefense = baseDefense; return this; }
+        public Builder baseMagicDefense(double baseMagicDefense) { this.baseMagicDefense = baseMagicDefense; return this; }
+        public Builder criticChance(double criticChance) { this.criticChance = criticChance; return this; }
+        public Builder criticDamage(double criticDamage){ this.criticDamage = criticDamage; return this; }
+        public Builder dodge(double dodge) { this.dodge = dodge; return this; }
+        public Builder speed(double speed) { this.speed = speed; return this; }
+        public Builder equip(Equipment equip) { this.equip = equip; return this; }
+        public Builder isEnemy(boolean isEnemy) { this.isEnemy = isEnemy; return this; }
+        public Builder price(int price) { this.price = price; return this; }
+        public Builder ability(Ability ability) { this.ability = ability; return this; }
+
+        public Character build() {
+            return new Character(this);
+        }
+
+    }
+
     public boolean isAlive(){
         return getActuHp()>0;
     }
-
-    public abstract void attack(Character enem);
 
     public void reciDmg(double dmg){
         this.actuHp -= dmg;
         if(!isAlive()) actuHp = 0;
     }
+
     @Override
     public int getPrice(){
         return price;
     }
-
-    public abstract Character clon();
 
     public double getActuHp() {
         return actuHp;
@@ -74,6 +120,10 @@ public abstract class Character implements Purchasable, Ability {
         return baseDefense;
     }
 
+    public double getCriticDamage() {
+        return criticDamage;
+    }
+
     public double getBaseMagicDefense() {
         return baseMagicDefense;
     }
@@ -97,17 +147,72 @@ public abstract class Character implements Purchasable, Ability {
     public boolean isEnemy() {
         return isEnemy;
     }
+
+    public Ability getAbility() {
+        return ability;
+    }
 }
 
 class RageAbility implements Ability{
+    private static final double PHYS_BONUS_MULT = 1.015;
+    private static final double MAGIC_BONUS_MULT = 1.030;
+    private static final int RAGE_GAIN = 15;
+    private static final int RAGE_TOTAL = 50;
     private int rage = 0;
-    private boolean bonusHit = false;
-
-    public RageAbility(){}
-
-    public RageAbility(int rage, boolean bonusHit) {
+    private boolean rageHit = false;
+    public RageAbility(int rage, boolean rageHit) {
         this.rage = rage;
-        this.bonusHit = bonusHit;
+        this.rageHit = rageHit;
+    }
+    @Override
+    public DamageReport execute(Character self, Character enemy) {
+        double baseDmg = self.getBasePw();
+        double baseMagicDmg = self.getBaseMagicPw();
+        double enemDefense = enemy.getBaseDefense();
+        double enemMagicDefense = enemy.getBaseMagicDefense();
+        double bonusDmg = self.getEquip().getBonusDmg();
+        double criticChance = self.getCriticChance();
+        double criticDamage = self.getCriticDamage();
+        double dodgeChance = enemy.getDodge();
+        double parcialPhysicDmg = (baseDmg==0? 0 : (baseDmg + (bonusDmg)*PHYS_BONUS_MULT));
+        double parcialMagicDmg = (baseMagicDmg==0? 0 : (baseMagicDmg + (bonusDmg)*MAGIC_BONUS_MULT));
+        double totalPhysicDmg = parcialPhysicDmg*(100.0/(100.0+enemDefense));
+        double totalMagicDmg = parcialMagicDmg*(100.0/(100.0+enemMagicDefense));
+        double sum = totalPhysicDmg + totalMagicDmg;
+        double chanceForCritic = Math.random();
+        double chanceForDodge = Math.random();
+        boolean isCritic = (chanceForCritic<criticChance);
+        boolean isDodged = (chanceForDodge<dodgeChance);
+        double totalDmg = (isCritic?  (sum*criticDamage) : sum);
+        boolean isKill = false;
+        if(isDodged) {
+            sum = 0;
+            totalMagicDmg = 0;
+            totalDmg = 0;
+            totalPhysicDmg = 0;
+        }
+        else {
+            rage += RAGE_GAIN;
+            if (rage >= RAGE_TOTAL) {
+                rage -= RAGE_TOTAL;
+                rageHit = true;
+            }
+            if (rageHit) {
+                totalDmg *= 2;
+                rageHit = false;
+            }
+            enemy.reciDmg(totalDmg);
+            if (!enemy.isAlive()) {
+                isKill = true;
+            }
+        }
+        return new DamageReport.Builder(self.getName(),enemy.getName()).totalPhysicDmg(totalPhysicDmg)
+                .totalMagicDmg(totalMagicDmg).totalDmg(totalDmg).isDodged(isDodged).isCritic(isCritic).isKill(isKill).build();
+    }
+
+    @Override
+    public RageAbility copy() {
+        return new RageAbility(rage, rageHit);
     }
 
     public int getRage() {
@@ -116,135 +221,5 @@ class RageAbility implements Ability{
     public void setRage(int rage) {
         this.rage = rage;
     }
-    @Override
-    public void attack(Character enem) {
-        double bonusDmg = getEquip().getBonusDmg();
-        System.out.println("BASE POWER = " + getBasePw());
-        System.out.println("BONUS DMG = " + bonusDmg);
-        System.out.println("ACTUAL RAGE = " + getRage());
-        double totalDmg = getBasePw() + bonusDmg;
-        System.out.println("TOTAL DMG = " + totalDmg);
-        if(bonusHit){
-            System.out.println("RAGE HIT! ");
-            totalDmg*=2;
-            bonusHit = !bonusHit;
-        }
-        System.out.println("ENEM. ACTUAL HP: " + enem.getActuHp());
-        enem.reciDmg(totalDmg);
-        if(!enem.isAlive()){
-            System.out.println("ENEM. DIED. ");
-        } else{
-            System.out.println("ENEM. ACTUAL HP AFTER DMG = " + enem.getActuHp());
-        }
-        rage += 10;
-        if(rage>=50){
-            rage = 0;
-            bonusHit = true;
-        }
-    }
 
-
-}
-
-
-class MageWarrior extends Character{
-    private int actuMana;
-    private int maxMana;
-    private static final double randHp = 400;
-    private static final int randMaxMana = 100;
-    private static final double randBasePw = 10;
-    private static final double randMagicPw = 100;
-    private static final double randBaseDefence = 50;
-    private static final double randMagicDefense = 60;
-    private static final double randCriticChance = 0.05;
-    private static final double randSpeed = 15;
-    private static final double randDodge = 0.1;
-    private static final int randPrice = 300;
-
-    public MageWarrior(){}
-    public MageWarrior(String name, Equipment equip){
-        Random rand = new Random();
-        double hpVariance = (double) (randHp * 0.15);
-        double maxiHp = randHp + (rand.nextDouble((hpVariance * 2) + 1) - hpVariance);
-
-        int manaVariance = (int) (randMaxMana * 0.15);
-        int maxManaRandom = randMaxMana + (rand.nextInt((manaVariance * 2) + 1) - manaVariance);
-
-        double pwVariance = (double) (randBasePw * 0.15);
-        double basePw = randBasePw + (rand.nextDouble((pwVariance * 2) + 1) - pwVariance);
-
-        double magicPwVariance = (double) (randMagicPw * 0.15);
-        double baseMagicPw = randMagicPw + (rand.nextDouble((magicPwVariance * 2) + 1) - magicPwVariance);
-
-        double defenseVariance = (double) (randBaseDefence * 0.15);
-        double baseDefense = randBaseDefence + (rand.nextDouble((defenseVariance * 2) + 1) - defenseVariance);
-
-        double magicDefenseVariance = (double) (randMagicDefense * 0.15);
-        double baseMagicDefense = randMagicDefense + (rand.nextDouble((magicDefenseVariance * 2) + 1) - magicDefenseVariance);
-
-        double criticVariance = (double) (randCriticChance * 0.15);
-        double criticChance = randCriticChance + (rand.nextDouble((criticVariance * 2) + 1) - criticVariance);
-
-        double speedVariance = (double) (randSpeed * 0.15);
-        double speed = randSpeed + (rand.nextDouble((speedVariance * 2) + 1) - speedVariance);
-
-        double dodgeVariance = (double) (randDodge * 0.20);
-        double dodge = randDodge + (rand.nextDouble((dodgeVariance * 2) + 1) - dodgeVariance);
-
-        int priceVariance = (int) (randPrice * 0.15);
-        int price = randPrice + (rand.nextInt((priceVariance * 2) + 1) - priceVariance);
-
-        super(name, maxiHp, basePw, baseMagicPw, baseDefense, baseMagicDefense, criticChance, speed, dodge, price, equip);
-        this.maxMana = maxManaRandom;
-        this.actuMana = maxMana;
-
-    }
-    public MageWarrior(String name, double maxiHp, double basePw, double baseMagicPw, double baseDefense,
-                       double baseMagicDefense, double criticChance, double speed, double dodge, int price, Equipment equip) {
-        super(name, maxiHp, basePw, baseMagicPw, baseDefense, baseMagicDefense, criticChance, speed, dodge, price, equip);
-        this.maxMana = maxManaRandom;
-        this.actuMana = maxMana;
-    }
-    @Override
-    public Character clon(){
-        Equipment equipmentCloned = null;
-        if (this.getEquip() != null){
-            equipmentCloned = this.getEquip().clon();
-        }
-        return new MageWarrior(
-                this.getName(), this.getMaxiHp(), this.getBasePw(),
-                this.getBaseMagicPw(), this.getBaseDefense(), this.getBaseMagicDefense(),
-                this.getCriticChance(), this.getSpeed(),
-                this.getDodge(), this.getPrice(), equipmentCloned);
-    }
-
-    @Override
-    public void attack(Character enem) {
-        double bonusDmg = getEquip().getBonusDmg();
-        System.out.println("BASE POWER = " + getBasePw());
-        System.out.println("BONUS DMG = " + bonusDmg);
-        System.out.println("ACTUAL MANA = " + getActuMana());
-        double totalDmg = getBasePw() + bonusDmg;
-        if(getActuMana()<0){
-            System.out.println("ACTUAL MANA IS LOWER THAN 0, NO BONUS DMG DEALER.");
-            totalDmg = getBasePw();
-        } else{
-            setActuMana(getActuMana()-10);
-        }
-        System.out.println("ENEM. ACTUAL HP: " + enem.getActuHp());
-        enem.reciDmg(totalDmg);
-        if(!enem.isAlive()){
-            System.out.println("ENEM. DIED. ");
-        } else{
-            System.out.println("ENEM. ACTUAL HP AFTER DMG = " + enem.getActuHp());
-        }
-    }
-
-    public int getActuMana() {
-        return actuMana;
-    }
-
-    public void setActuMana(int actuMana) {
-        this.actuMana = actuMana;
-    }
 }

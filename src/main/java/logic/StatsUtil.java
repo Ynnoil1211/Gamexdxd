@@ -20,24 +20,30 @@ interface Purchasable {
 }
 
 class CharacterFactory{
-    private static final String[] MAGE_NAMES = {
-            "Merlin", "Gandalf", "Vivi", "Medivh", "Jaina",
-            "Ryze", "Lux", "Veigar", "Kael'thas", "Antonidas",
-            "Sypha", "Yennefer", "Triss", "Saruman", "Dumbledore"
+    private static final String[] RAGE_NAMES = {
+            "BORRE_1", "BORRE_2", "BORRE_3", "BORRE_4", "BORRE_5",
+            "BREYNER_1", "BREYNER_2", "BREYNER_3", "BREYNER_4", "BREYNER_5"
     };
-    public static MageWarrior createMageWarrior() {
-        String name = MAGE_NAMES[(int) (Math.random() * MAGE_NAMES.length)];
-        double hp = StatsUtil.calculateVariance(400,0.15);
-        int maxMana = StatsUtil.calculateVarianceInt(100, 0.15);
-        double basePw = StatsUtil.calculateVariance(10, 0.15);
-        double magicPw = StatsUtil.calculateVariance(100, 0.15);
-        double baseDefense = StatsUtil.calculateVariance(50, 0.15);
-        double magicDefense = StatsUtil.calculateVariance(60, 0.15);
-        double criticChance = StatsUtil.calculateVariance(0.05, 0.15);
-        double speed = StatsUtil.calculateVariance(15, 0.15);
-        double dodge = StatsUtil.calculateVariance(0.1, 0.20);
-        int price = StatsUtil.calculateVarianceInt(300, 0.15);
-        Equipment defaultStaff = new Equipment("Novice Staff");
-        return new MageWarrior(name, hp, basePw, magicPw, baseDefense, magicDefense, criticChance, speed, dodge, price, defaultStaff);
+    public static Character createRageWarrior() {
+        String name = RAGE_NAMES[(int) (Math.random() * RAGE_NAMES.length)];
+        double variancePorcentil = 0.15;
+        double maxiHp = StatsUtil.calculateVariance(600,variancePorcentil);
+        int maxMana = StatsUtil.calculateVarianceInt(0, variancePorcentil);
+        double basePw = StatsUtil.calculateVariance(100, variancePorcentil);
+        double magicPw = StatsUtil.calculateVariance(0, variancePorcentil);
+        double baseDefense = StatsUtil.calculateVariance(70, variancePorcentil);
+        double magicDefense = StatsUtil.calculateVariance(60, variancePorcentil);
+        double criticChance = StatsUtil.calculateVariance(0.05, variancePorcentil);
+        double criticDamage = StatsUtil.calculateVariance(2.0, variancePorcentil);
+        double speed = StatsUtil.calculateVariance(12, variancePorcentil);
+        double dodge = StatsUtil.calculateVariance(0.1, variancePorcentil);
+        int price = StatsUtil.calculateVarianceInt(300, variancePorcentil);
+        Ability ability = new RageAbility(0, false);
+        Equipment defaultStaff = new Equipment.Builder("Borre's Coding skill (0).").build();
+        return new Character.Builder(name).maxiHp(maxiHp).maxMana(maxMana).basePw(basePw).baseMagicPw(magicPw)
+                .baseDefense(baseDefense).baseMagicDefense(magicDefense)
+                .criticChance(criticChance).criticDamage(criticDamage)
+                .speed(speed).dodge(dodge).price(price).ability(ability)
+                .equip(defaultStaff).build();
     }
 }
