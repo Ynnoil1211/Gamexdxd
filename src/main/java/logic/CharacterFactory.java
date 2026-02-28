@@ -8,18 +8,18 @@ public class CharacterFactory{
     public static Character createRageWarrior() {
         String name = RAGE_NAMES[(int) (Math.random() * RAGE_NAMES.length)];
         double variancePorcentil = 0.15;
-        double maxiHp = StatsUtil.calculateVariance(600,variancePorcentil);
+        int maxiHp = StatsUtil.calculateVarianceInt(600,variancePorcentil);
         int maxMana = StatsUtil.calculateVarianceInt(0, variancePorcentil);
-        double basePw = StatsUtil.calculateVariance(100, variancePorcentil);
-        double magicPw = StatsUtil.calculateVariance(0, variancePorcentil);
-        double baseDefense = StatsUtil.calculateVariance(70, variancePorcentil);
-        double magicDefense = StatsUtil.calculateVariance(60, variancePorcentil);
+        int basePw = StatsUtil.calculateVarianceInt(100, variancePorcentil);
+        int magicPw = StatsUtil.calculateVarianceInt(0, variancePorcentil);
+        int baseDefense = StatsUtil.calculateVarianceInt(70, variancePorcentil);
+        int magicDefense = StatsUtil.calculateVarianceInt(60, variancePorcentil);
         double criticChance = StatsUtil.calculateVariance(0.05, variancePorcentil);
         double criticDamage = StatsUtil.calculateVariance(2.0, variancePorcentil);
         double speed = StatsUtil.calculateVariance(12, variancePorcentil);
         double dodge = StatsUtil.calculateVariance(0.1, variancePorcentil);
         int price = StatsUtil.calculateVarianceInt(300, variancePorcentil);
-        Ability ability = new RageAbility(0, false);
+        SkillBooks.Ability ability = new SkillBooks.RageAbility(0, false);
         Equipment defaultStaff = new Equipment.Builder("Borre's Coding skill (0).").build();
         return new Character.Builder(name).maxiHp(maxiHp).maxMana(maxMana).basePw(basePw).baseMagicPw(magicPw)
                 .baseDefense(baseDefense).baseMagicDefense(magicDefense)

@@ -3,21 +3,21 @@ import vista.*;
 import java.util.Random;
 public class Character implements Purchasable {
     private String name;
-    private double actuHp;
-    private double maxiHp;
-    private double maxMana;
-    private double actuMana;
+    private int actuHp;
+    private int maxiHp;
+    private int maxMana;
+    private int actuMana;
     private double hpRegenerate;
     private double manaRegenerate;
-    private double basePw;
-    private double baseMagicPw;
-    private double baseDefense;
-    private double baseMagicDefense;
+    private int basePw;
+    private int baseMagicPw;
+    private int baseDefense;
+    private int baseMagicDefense;
     private double criticChance;
     private double criticDamage;
     private double dodge;
     private double speed;
-    private Ability ability;
+    private SkillBooks.Ability ability;
     private Equipment equip;
     private boolean isEnemy;
     //---//
@@ -46,20 +46,20 @@ public class Character implements Purchasable {
     //---//
     public static class Builder{
         private String name;
-        private double maxiHp = 500;
+        private int maxiHp = 500;
         private int maxMana = 0;
         private double hpRegenerate = 10;
         private double manaRegenerate = 0;
-        private double basePw = 50;
-        private double baseMagicPw = 10;
-        private double baseDefense = 25;
-        private double baseMagicDefense = 20;
+        private int basePw = 50;
+        private int baseMagicPw = 10;
+        private int baseDefense = 25;
+        private int baseMagicDefense = 20;
         private double criticChance = 0.1;
         private double criticDamage = 2.0;
         private double dodge = 0.1;
-        private double speed = 10;
-        private Equipment equip = null;
-        private Ability ability = null;
+        private double speed = 10.0;
+        private Equipment equip = new Equipment.Builder("Borre's Coding skill (0).").build();;;;;
+        private SkillBooks.Ability ability = null;
         private boolean isEnemy = false;
         private int price = 0;
 
@@ -67,14 +67,14 @@ public class Character implements Purchasable {
             this.name = name;
         }
         public Builder name(String name) { this.name = name; return this; }
-        public Builder maxiHp(double maxiHp) { this.maxiHp = maxiHp; return this; }
+        public Builder maxiHp(int maxiHp) { this.maxiHp = maxiHp; return this; }
         public Builder maxMana(int maxMana){ this.maxMana = maxMana; return this; }
         public Builder hpRegenerate(double hpRegenerate) { this.hpRegenerate = hpRegenerate; return this; }
         public Builder manaRegenerate(double manaRegenerate) { this.manaRegenerate = manaRegenerate; return this; }
-        public Builder basePw(double basePw) { this.basePw = basePw; return this; }
-        public Builder baseMagicPw(double baseMagicPw) { this.baseMagicPw = baseMagicPw; return this; }
-        public Builder baseDefense(double baseDefense) { this.baseDefense = baseDefense; return this; }
-        public Builder baseMagicDefense(double baseMagicDefense) { this.baseMagicDefense = baseMagicDefense; return this; }
+        public Builder basePw(int basePw) { this.basePw = basePw; return this; }
+        public Builder baseMagicPw(int baseMagicPw) { this.baseMagicPw = baseMagicPw; return this; }
+        public Builder baseDefense(int baseDefense) { this.baseDefense = baseDefense; return this; }
+        public Builder baseMagicDefense(int baseMagicDefense) { this.baseMagicDefense = baseMagicDefense; return this; }
         public Builder criticChance(double criticChance) { this.criticChance = criticChance; return this; }
         public Builder criticDamage(double criticDamage){ this.criticDamage = criticDamage; return this; }
         public Builder dodge(double dodge) { this.dodge = dodge; return this; }
@@ -82,7 +82,7 @@ public class Character implements Purchasable {
         public Builder equip(Equipment equip) { this.equip = equip; return this; }
         public Builder isEnemy(boolean isEnemy) { this.isEnemy = isEnemy; return this; }
         public Builder price(int price) { this.price = price; return this; }
-        public Builder ability(Ability ability) { this.ability = ability; return this; }
+        public Builder ability(SkillBooks.Ability ability) { this.ability = ability; return this; }
 
         public Character build() {
             return new Character(this);
@@ -94,7 +94,16 @@ public class Character implements Purchasable {
         return getActuHp()>0;
     }
 
-    public void reciDmg(double dmg){
+    public void attack(Character enemy){
+        if(this.ability != null){
+            this.ability.execute(this, enemy).combateReport();
+        }
+        else{
+            enemy.reciDmg(this.basePw);
+        }
+    }
+
+    public void reciDmg(int dmg){
         this.actuHp -= dmg;
         if(!isAlive()) actuHp = 0;
     }
@@ -122,7 +131,25 @@ public class Character implements Purchasable {
                 .isEnemy(this.isEnemy).price(this.price).build();
     }
 
-    public double getActuHp() {
+    public String getCharacterInfo() {
+        StringBuilder info = new StringBuilder();
+        info.append("=== ").append(this.name).append(" ===\n");
+        info.append("HP: ").append(this.actuHp).append(" / ").append(this.maxiHp).append("\n");
+        info.append("Power: ").append(this.basePw).append("\n");
+        info.append("Defense: ").append(this.baseDefense).append("\n");
+        info.append("Speed: ").append(String.format("%.2f", this.speed)).append("\n");
+        if (this.maxMana > 0) info.append("Mana: ").append(this.actuMana).append(" / ").append(this.maxMana).append("\n");
+        if (this.baseMagicPw > 0) info.append("Magic Power: ").append(this.baseMagicPw).append("\n");
+        if (this.baseMagicDefense > 0) info.append("Magic Defense: ").append(this.baseMagicDefense).append("\n");
+        if (this.criticChance > 0) info.append("Crit Chance: ").append((int)(this.criticChance * 100)).append("%\n");
+        if (this.dodge > 0) info.append("Dodge: ").append((int)(this.dodge * 100)).append("%\n");
+        if (this.equip != null) info.append("Equipped: ").append(this.equip.getName()).append("\n");
+        if (this.ability != null) info.append("Ability: ").append(this.ability.getAbilityDisplayName()).append("\n");
+        if (this.price > 0) info.append("Price: ").append(this.price).append("\n");
+        return info.toString();
+    }
+
+    public int getActuHp() {
         return actuHp;
     }
 
@@ -130,15 +157,15 @@ public class Character implements Purchasable {
         return name;
     }
 
-    public double getBaseMagicPw() {
+    public int getBaseMagicPw() {
         return baseMagicPw;
     }
 
-    public double getMaxMana() {
+    public int getMaxMana() {
         return maxMana;
     }
 
-    public double getActuMana() {
+    public int getActuMana() {
         return actuMana;
     }
 
@@ -150,15 +177,15 @@ public class Character implements Purchasable {
         return manaRegenerate;
     }
 
-    public double getMaxiHp() {
+    public int getMaxiHp() {
         return maxiHp;
     }
 
-    public double getBasePw() {
+    public int getBasePw() {
         return basePw;
     }
 
-    public double getBaseDefense() {
+    public int getBaseDefense() {
         return baseDefense;
     }
 
@@ -166,7 +193,7 @@ public class Character implements Purchasable {
         return criticDamage;
     }
 
-    public double getBaseMagicDefense() {
+    public int getBaseMagicDefense() {
         return baseMagicDefense;
     }
 
@@ -190,7 +217,7 @@ public class Character implements Purchasable {
         return isEnemy;
     }
 
-    public Ability getAbility() {
+    public SkillBooks.Ability getAbility() {
         return ability;
     }
 }

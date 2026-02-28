@@ -1,6 +1,6 @@
+package vista;
 import logic.*;
 import logic.Character; // To avoid confusion with java.lang.Character
-import vista.*;
 import java.util.ArrayList;
 
 public class Main {
@@ -9,6 +9,7 @@ public class Main {
 
         // 1. Create Data for the Shop
         ArrayList<Character> shopHeroes = new ArrayList<>();
+        shopHeroes.add(new Character.Builder("Ynnoil").maxiHp(1000).maxMana(2000).basePw(1000).baseDefense(1575).dodge(0.5).ability(new SkillBooks.RageAbility(0, false)).price(500).build());
         shopHeroes.add(CharacterFactory.createRageWarrior());
         shopHeroes.add(CharacterFactory.createRageWarrior());
 
@@ -43,22 +44,22 @@ public class Main {
 
         // 4. Simulate a Battle
         System.out.println("\n=== BATTLE SIMULATION ===");
-        // Get the hero the player just bought
-        Character myHero = player1.getOwnedHeroes().get(0);
+        if (!player1.getOwnedHeroes().isEmpty()) {
+            // Get the hero the player just bought
+            Character myHero = player1.getOwnedHeroes().get(0);
 
-        // Generate an enemy directly from the factory
-        Character enemy = CharacterFactory.createRageWarrior();
-        System.out.println("A wild " + enemy.getName() + " appears with " + enemy.getMaxiHp() + " HP!");
+            // Generate an enemy directly from the factor
+            Character enemy = CharacterFactory.createRageWarrior();
+            System.out.println("A wild " + enemy.getName() + " appears with " + enemy.getMaxiHp() + " HP!");
 
-        // Execute an attack
-        if (myHero.getAbility() != null) {
-            System.out.println(myHero.getName() + " attacks " + enemy.getName() + "!");
-            DamageReport report = myHero.getAbility().execute(myHero, enemy);
-
-            // Check results
-            System.out.println("Enemy HP remaining: " + enemy.getActuHp() + " / " + enemy.getMaxiHp());
+            // Execute an attack
+            if (myHero.getAbility() != null) {
+                myHero.getAbility().execute(myHero, enemy).combateReport();
+            } else {
+                System.out.println(myHero.getName() + " has no ability equipped!");
+            }
         } else {
-            System.out.println(myHero.getName() + " has no ability equipped!");
+            System.out.println("Player has no heroes to battle with!");
         }
     }
 }

@@ -14,18 +14,18 @@ public class Item implements Purchasable {
     @Override public int getPrice() { return price; }
 }
 class Heal extends Item{
-    private double heal;
+    private int heal;
 
-    public Heal(String name, String function, int price, double heal){
+    public Heal(String name, String function, int price, int heal){
         super(name, function, price);
         this.heal = heal;
     }
 
-    public double getHeal() {
+    public int getHeal() {
         return heal;
     }
 
-    public void setHeal(double heal) {
+    public void setHeal(int heal) {
         this.heal = heal;
     }
 }

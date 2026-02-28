@@ -17,19 +17,14 @@ public class Shop {
     public void showHeroesCatalog() {
         System.out.println("--- HEROES CATALOG ---");
         for (Character hero : catalogHeroes) {
-            System.out.println("Name: " + hero.getName());
-            System.out.println("Base Power: " + hero.getBasePw());
-            System.out.println("Max HP: " + hero.getMaxiHp());
-            System.out.println("Price: " + hero.getPrice());
+            System.out.println(hero.getCharacterInfo());
         }
     }
 
     public void showEquipmentCatalog() {
         System.out.println("--- EQUIPMENT CATALOG ---");
         for (Equipment eq : catalogEquipments) {
-            System.out.println("Name: " + eq.getName());
-            System.out.println("Bonus DMG: " + eq.getBonusDmg());
-            System.out.println("Price: " + eq.getPrice());
+            System.out.println(eq.getEquipmentInfo());
         }
     }
 

@@ -42,8 +42,7 @@ public class Player {
 
     public void showEquipments(){
         for (Equipment eq : equipmentInventory){
-            System.out.println("Name: " + eq.getName());
-            System.out.println("Bonus DMG: " + eq.getBonusDmg());
+            System.out.println(eq.getEquipmentInfo());
         }
     }
     public void showItems(){
@@ -56,12 +55,7 @@ public class Player {
         for (int i = 0; i < getOwnedHeroes().size(); i++){
             Character ch = getOwnedHeroes().get(i);
             System.out.print(i+1 + " ");
-            System.out.println("Name: " + ch.getName());
-            System.out.println("Max HP." + ch.getMaxiHp());
-            System.out.println("Base Power: " + ch.getBasePw());
-            System.out.println("Actual Equipment: " + ch.getEquip().getName());
-            System.out.println("Actual Bonus DMG: " + ch.getEquip().getBonusDmg());
-            System.out.println("--------------------");
+            System.out.println(ch.getCharacterInfo());
         }
     }
     public void addHero(Character hero){
