@@ -54,7 +54,7 @@ public class Main {
 
             // Execute an attack
             if (myHero.getAbility() != null) {
-                myHero.getAbility().execute(myHero, enemy).combateReport();
+                myHero.attack(enemy);
             } else {
                 System.out.println(myHero.getName() + " has no ability equipped!");
             }
