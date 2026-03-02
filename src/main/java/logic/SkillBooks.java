@@ -4,6 +4,8 @@ public class SkillBooks {
         DamageReport execute(Character attacker, Character target);
         Ability copy();
         String getAbilityDisplayName();
+        boolean[] getValidLaunchRanks();
+        boolean[] getValidTargetRanks();
     }
     public static class RageAbility implements Ability {
         private static final double PHYS_BONUS_MULT = 1.015;
@@ -71,6 +73,16 @@ public class SkillBooks {
         @Override
         public String getAbilityDisplayName() {
             return "Fuaaaaah (Rage).";
+        }
+
+        @Override
+        public boolean[] getValidLaunchRanks() {
+            return new boolean[]{true, true, false, false};
+        }
+
+        @Override
+        public boolean[] getValidTargetRanks() {
+            return new boolean[]{true, true, false, false};
         }
 
         public int getRage() {

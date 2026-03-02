@@ -1,27 +1,21 @@
 package logic;
 import vista.*;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 public class Character implements Purchasable {
     private String name;
-    private int actuHp;
-    private int maxiHp;
-    private int maxMana;
-    private int actuMana;
-    private double hpRegenerate;
-    private double manaRegenerate;
-    private int basePw;
-    private int baseMagicPw;
-    private int baseDefense;
-    private int baseMagicDefense;
-    private double criticChance;
-    private double criticDamage;
-    private double dodge;
-    private double speed;
-    private SkillBooks.Ability ability;
+    private int actuHp, maxiHp, maxMana, actuMana, basePw, baseMagicPw, baseDefense, baseMagicDefense;
+    private double hpRegenerate, manaRegenerate, criticChance, criticDamage, dodge, speed;
+    private int level, exp;
+    private Job currentJob;
+    private final List<SkillBooks.Ability> unlockAbilities = new ArrayList<>();
+    private final SkillBooks.Ability[] activeAbilities = new SkillBooks.Ability[4];
     private Equipment equip;
-    private boolean isEnemy;
-    //---//
+    private final boolean isEnemy;
     private int price;
+    //---//
     private Character(Builder builder){
         this.name = builder.name;
         this.maxiHp = builder.maxiHp;
@@ -41,7 +35,8 @@ public class Character implements Purchasable {
         this.equip = builder.equip;
         this.isEnemy = builder.isEnemy;
         this.price = builder.price;
-        this.ability = builder.ability;
+        this.level = builder.level;
+        this.exp = builder.exp;
     }
     //---//
     public static class Builder{
@@ -59,7 +54,10 @@ public class Character implements Purchasable {
         private double dodge = 0.1;
         private double speed = 10.0;
         private Equipment equip = new Equipment.Builder("Borre's Coding skill (0).").build();;;;;
-        private SkillBooks.Ability ability = null;
+        private int level = 0, exp = 0;
+        private Job currentJob = null;
+        private List<SkillBooks.Ability> unlockAbilities = new ArrayList<>();
+        private SkillBooks.Ability[] activeAbilities = new SkillBooks.Ability[4]; //not initialized yet.
         private boolean isEnemy = false;
         private int price = 0;
 
@@ -82,8 +80,23 @@ public class Character implements Purchasable {
         public Builder equip(Equipment equip) { this.equip = equip; return this; }
         public Builder isEnemy(boolean isEnemy) { this.isEnemy = isEnemy; return this; }
         public Builder price(int price) { this.price = price; return this; }
-        public Builder ability(SkillBooks.Ability ability) { this.ability = ability; return this; }
-
+        public Builder level(int level) { this.level = level; return this; }
+        public Builder exp(int exp) { this.exp = exp; return this;}
+        public Builder currentJob(Job currentJob) { this.currentJob = currentJob; return this;}
+        public Builder startingAbilities(SkillBooks.Ability... abilities) { //varargs
+            for(int i = 0; (i < abilities.length) && (i < 4); i++){
+                if(abilities[i] != null){
+                    this.unlockAbilities.add(abilities[i]);
+                    this.activeAbilities[i] = abilities[i].copy();
+                }
+            }
+            return this;
+        }
+        public Builder abilities(List<SkillBooks.Ability> unlocked, SkillBooks.Ability[] active) {
+            this.unlockAbilities = new ArrayList<>(unlocked);
+            this.activeAbilities = active.clone();
+            return this;
+        }
         public Character build() {
             return new Character(this);
         }
@@ -94,22 +107,22 @@ public class Character implements Purchasable {
         return getActuHp()>0;
     }
 
-    public void attack(Character enemy){
+    /** public void attack(Character enemy){
         if(this.ability != null){
             this.ability.execute(this, enemy).combateReport();
         }
         else{
             enemy.reciDmg(this.basePw);
         }
-    }
+    }*/
 
     public void reciDmg(int dmg){
         this.actuHp -= dmg;
         if(!isAlive()) actuHp = 0;
     }
     public void applyRegeneration() {
-        if (isAlive() && hpRegenerate > 0) {
-            actuHp += hpRegenerate;
+        if (isAlive() && hpRegenerate > 0.0) {
+            actuHp += (int) (maxiHp*hpRegenerate);
             if (actuHp > maxiHp) {
                 actuHp = maxiHp;
             }
