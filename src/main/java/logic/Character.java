@@ -10,8 +10,8 @@ public class Character implements Purchasable {
     private double hpRegenerate, manaRegenerate, criticChance, criticDamage, dodge, speed;
     private int level, exp;
     private Job currentJob;
-    private final List<SkillBooks.Ability> unlockAbilities = new ArrayList<>();
-    private final SkillBooks.Ability[] activeAbilities = new SkillBooks.Ability[4];
+    private List<SkillBooks.Ability> unlockAbilities = new ArrayList<>();
+    private SkillBooks.Ability[] activeAbilities = new SkillBooks.Ability[4];
     private Equipment equip;
     private final boolean isEnemy;
     private int price;
@@ -37,6 +37,8 @@ public class Character implements Purchasable {
         this.price = builder.price;
         this.level = builder.level;
         this.exp = builder.exp;
+        this.activeAbilities = builder.activeAbilities;
+        this.unlockAbilities = builder.unlockAbilities;
     }
     //---//
     public static class Builder{
@@ -83,7 +85,7 @@ public class Character implements Purchasable {
         public Builder level(int level) { this.level = level; return this; }
         public Builder exp(int exp) { this.exp = exp; return this;}
         public Builder currentJob(Job currentJob) { this.currentJob = currentJob; return this;}
-        public Builder startingAbilities(SkillBooks.Ability... abilities) { //varargs
+        public Builder activeAbilities(SkillBooks.Ability... abilities) { //varargs
             for(int i = 0; (i < abilities.length) && (i < 4); i++){
                 if(abilities[i] != null){
                     this.unlockAbilities.add(abilities[i]);
@@ -92,7 +94,7 @@ public class Character implements Purchasable {
             }
             return this;
         }
-        public Builder abilities(List<SkillBooks.Ability> unlocked, SkillBooks.Ability[] active) {
+        public Builder unlockAbilities (List<SkillBooks.Ability> unlocked, SkillBooks.Ability[] active) {
             this.unlockAbilities = new ArrayList<>(unlocked);
             this.activeAbilities = active.clone();
             return this;
@@ -133,14 +135,45 @@ public class Character implements Purchasable {
         return price;
     }
 
+    public int expToTheNextLevel(){
+        return (int) (100 * Math.pow(level, 1.5));
+    }
+
+    public void gainExp(int amount){
+        this.exp += amount;
+        while(this.exp >= expToTheNextLevel()){
+            this.exp-=expToTheNextLevel();
+            levelUp();
+        }
+    }
+
+    public void levelUp(){
+        this.level++;
+
+        this.actuHp = this.maxiHp;
+        this.actuMana = this.maxMana;
+        //if(this.currenJob != null && currentJob.getSkillUnlockedAtLevel(this.level)!=null){}
+    }
+
     public Character clon() {
+        SkillBooks.Ability[] cloneActive = new SkillBooks.Ability[4];
+        for(int i = 0; i < 4; i++){
+            cloneActive[i] = (this.activeAbilities[i].copy());
+        }
+
+        List<SkillBooks.Ability> cloneUnlock = new ArrayList<>();
+        for(SkillBooks.Ability ability : this.unlockAbilities){
+            cloneUnlock.add(ability.copy());
+        }
+
         return new Builder(this.name)
                 .maxiHp(this.maxiHp).maxMana((int) this.maxMana).hpRegenerate(this.hpRegenerate)
                 .manaRegenerate(this.manaRegenerate).basePw(this.basePw).baseMagicPw(this.baseMagicPw)
                 .baseDefense(this.baseDefense).baseMagicDefense(this.baseMagicDefense)
                 .criticChance(this.criticChance).criticDamage(this.criticDamage)
                 .dodge(this.dodge).speed(this.speed).equip(this.equip)
-                .ability(this.ability != null ? this.ability.copy() : null)
+                .level(this.level).currentJob(this.currentJob)
+                .activeAbilities(cloneActive).unlockAbilities(cloneUnlock, cloneActive)
                 .isEnemy(this.isEnemy).price(this.price).build();
     }
 
@@ -157,7 +190,12 @@ public class Character implements Purchasable {
         if (this.criticChance > 0) info.append("Crit Chance: ").append((int)(this.criticChance * 100)).append("%\n");
         if (this.dodge > 0) info.append("Dodge: ").append((int)(this.dodge * 100)).append("%\n");
         if (this.equip != null) info.append("Equipped: ").append(this.equip.getName()).append("\n");
-        if (this.ability != null) info.append("Ability: ").append(this.ability.getAbilityDisplayName()).append("\n");
+        if (this.activeAbilities != null) info.append("List of Actives Abilities: \n");
+        for(SkillBooks.Ability ability : activeAbilities){info.append(ability.getAbilityDisplayName()).append("\n");}
+        info.append("\n");
+        if(this.unlockAbilities != null) info.append("List of Unlock Abilities: \n");
+        for(SkillBooks.Ability ability : unlockAbilities){info.append(ability.getAbilityDisplayName()).append("\n");}
+        info.append("\n");
         if (this.price > 0) info.append("Price: ").append(this.price).append("\n");
         return info.toString();
     }
@@ -230,7 +268,23 @@ public class Character implements Purchasable {
         return isEnemy;
     }
 
-    public SkillBooks.Ability getAbility() {
-        return ability;
+    public int getLevel() {
+        return level;
+    }
+
+    public int getExp() {
+        return exp;
+    }
+
+    public Job getCurrentJob() {
+        return currentJob;
+    }
+
+    public List<SkillBooks.Ability> getUnlockAbilities() {
+        return unlockAbilities;
+    }
+
+    public SkillBooks.Ability[] getActiveAbilities() {
+        return activeAbilities;
     }
 }
