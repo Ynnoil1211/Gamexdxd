@@ -9,7 +9,7 @@ public class Main {
 
         // 1. Create Data for the Shop
         ArrayList<Character> shopHeroes = new ArrayList<>();
-        shopHeroes.add(new Character.Builder("Ynnoil").maxiHp(1000).maxMana(2000).basePw(1000).baseDefense(1575).dodge(0.5).ability(new SkillBooks.RageAbility(0, false)).price(500).build());
+        shopHeroes.add(new Character.Builder("Ynnoil").maxiHp(1000).maxMana(2000).basePw(1000).baseDefense(1575).dodge(0.5).ability(new SkillTemplate.RageAbility(0, false)).price(500).build());
         shopHeroes.add(CharacterFactory.createRageWarrior());
         shopHeroes.add(CharacterFactory.createRageWarrior());
 

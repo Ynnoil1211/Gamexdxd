@@ -19,7 +19,7 @@ public class CharacterFactory{
         double speed = StatsUtil.calculateVariance(12, variancePorcentil);
         double dodge = StatsUtil.calculateVariance(0.1, variancePorcentil);
         int price = StatsUtil.calculateVarianceInt(300, variancePorcentil);
-        SkillBooks.Ability ability = new SkillBooks.RageAbility(0, false);
+        SkillTemplate.Ability ability = new SkillTemplate.RageAbility(0, false);
         Equipment defaultStaff = new Equipment.Builder("Borre's Coding skill (0).").build();
         return new Character.Builder(name).maxiHp(maxiHp).maxMana(maxMana).basePw(basePw).baseMagicPw(magicPw)
                 .baseDefense(baseDefense).baseMagicDefense(magicDefense)

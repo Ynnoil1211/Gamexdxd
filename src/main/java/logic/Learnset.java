@@ -4,7 +4,7 @@ public class Learnset {
 
 
 
-    public SkillBooks.Ability unlockAbilityDueToLevel (Job.JobType jobType, int level){
+    public SkillTemplate.Ability unlockAbilityDueToLevel (Job.JobType jobType, int level){
         return null;
     }
 

@@ -1,51 +1,80 @@
 package logic;
 
+import java.util.Map;
+
 public class CombatEngine {
     private static final double PHYS_BONUS_MULT = 1.015;
     private static final double MAGIC_BONUS_MULT = 1.030;
-    private static final int RAGE_GAIN = 15;
-    private static final int RAGE_TOTAL = 50;
-    public DamageReport execute(Character self, Character enemy) {
-        int baseDmg = self.getBasePw();
-        int baseMagicDmg = self.getBaseMagicPw();
-        int enemDefense = enemy.getBaseDefense();
-        int enemMagicDefense = enemy.getBaseMagicDefense();
-        int bonusDmg = (self.getEquip() != null) ? self.getEquip().getBonusDmg() : 0;
-        double criticChance = self.getCriticChance();
-        double criticDamage = self.getCriticDamage();
-        double dodgeChance = enemy.getDodge();
-        int parcialPhysicDmg = baseDmg == 0 ? 0 : (int) (baseDmg + (bonusDmg) * PHYS_BONUS_MULT);
-        int parcialMagicDmg = baseMagicDmg == 0 ? 0 : (int) (baseMagicDmg + (bonusDmg) * MAGIC_BONUS_MULT);
-        int totalPhysicDmg = (int) (parcialPhysicDmg * (100.0 / (100.0 + enemDefense)));
-        int totalMagicDmg = (int) (parcialMagicDmg * (100.0 / (100.0 + enemMagicDefense)));
-        int sum = totalPhysicDmg + totalMagicDmg;
-        double chanceForCritic = Math.random();
-        double chanceForDodge = Math.random();
-        boolean isCritic = (chanceForCritic < criticChance);
-        boolean isDodged = (chanceForDodge < dodgeChance);
-        int totalDmg = isCritic ? (int) (sum * criticDamage) : sum;
-        boolean isKill = false;
-        if (isDodged) {
-            sum = 0;
-            totalMagicDmg = 0;
-            totalDmg = 0;
-            totalPhysicDmg = 0;
-        } else {
-            rage += RAGE_GAIN;
-            if (rage >= RAGE_TOTAL) {
-                rage -= RAGE_TOTAL;
-                rageHit = true;
+
+    public static DamageReport calculateDmg(Character attacker, Character target, Map<DamageType, Double> multipliers, StatusEffect effect) {
+        boolean isDodged = Math.random() < target.getDodge();
+        DamageReport.Builder reportBuilder = new DamageReport.Builder(attacker.getName(), target.getName())
+                .isDodged(isDodged);
+
+        if (isDodged) return reportBuilder.build();
+
+        boolean isCritic = Math.random() < attacker.getCriticChance();
+        reportBuilder.isCritic(isCritic);
+        double critMult = isCritic ? attacker.getCriticDamage() : 1.0;
+
+        int bonusPhys = (attacker.getEquip() != null) ? attacker.getEquip().getBonusDmg() : 0;
+        int bonusMagic = (attacker.getEquip() != null) ? attacker.getEquip().getBonusMagicDmg() : 0;
+
+        int totalDamageToDeal = 0;
+
+        // --- DYNAMIC DAMAGE LOOP ---
+        for (Map.Entry<DamageType, Double> entry : multipliers.entrySet()) {
+            DamageType type = entry.getKey();
+            double mult = entry.getValue();
+
+            if (mult <= 0) continue;
+
+            int calculatedAmount = 0;
+
+            switch (type) {
+                case PHYSICAL:
+                    double rawPhys = (attacker.getBasePw() + bonusPhys) * mult * PHYS_BONUS_MULT * critMult;
+                    calculatedAmount = (int) (rawPhys * (100.0 / (100.0 + target.getBaseDefense()))); // Armor reduces it
+                    break;
+
+                case MAGICAL:
+                    double rawMagic = (attacker.getBaseMagicPw() + bonusMagic) * mult * MAGIC_BONUS_MULT * critMult;
+                    calculatedAmount = (int) (rawMagic * (100.0 / (100.0 + target.getBaseMagicDefense()))); // Magic Armor reduces it
+                    break;
+
+                case TRUE:
+                    calculatedAmount = (int) (attacker.getBasePw() * mult * critMult);
+                    break;
+
+                case HEAL:
+                    calculatedAmount = (int) (attacker.getBaseMagicPw() * mult * critMult);
+                    target.receiveHealing(calculatedAmount); // You might want to make a specific target.heal(amount) method later!
+                    break;
+
+                case POISON:
+                    calculatedAmount = (int) (10 * mult);
+                    target.addStatusEffect(new StatusEffect(StatusEffect.EffectType.POISON, calculatedAmount, 2));
+                    break;
             }
-            if (rageHit) {
-                totalDmg *= 2;
-                rageHit = false;
-            }
-            enemy.reciDmg(totalDmg);
-            if (!enemy.isAlive()) {
-                isKill = true;
+
+            reportBuilder.addAmount(type, calculatedAmount);
+
+            if (type != DamageType.HEAL) {
+                totalDamageToDeal += calculatedAmount;
             }
         }
-        return new DamageReport.Builder(self.getName(), enemy.getName()).totalPhysicDmg(totalPhysicDmg)
-                .totalMagicDmg(totalMagicDmg).totalDmg(totalDmg).isDodged(isDodged).isCritic(isCritic).isKill(isKill).build();
+
+       //dmgDealing
+        if (totalDamageToDeal > 0) {
+            target.receiveDmg(totalDamageToDeal);
+        }
+        if (effect != null) {
+            target.addStatusEffect(effect); // Adds it to the Character's active effects list
+            reportBuilder.appliedEffect(effect); // Tells the report to print it
+        }
+
+        reportBuilder.isKill(!target.isAlive());
+
+        return reportBuilder.build();
     }
 }

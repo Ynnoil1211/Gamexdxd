@@ -1,6 +1,5 @@
 package logic;
 import java.util.Map;
-import java.util.HashMap;
 
 public class Job {
     public static enum JobType{
@@ -22,13 +21,13 @@ public class Job {
     private JobType jobType;
     private int currentStack;
     private final int maxStack = 6;
-    private Map<Integer, SkillBooks.Ability> unlockSkills;
+    private Map<Integer, SkillTemplate.Ability> unlockSkills;
 
     public Job(JobType jobType){
         this.jobType = jobType;
         this.currentStack=0;
     }
-    public SkillBooks.Ability unlockAbilityDueToLevel(Job.JobType jobType, int level){
+    public SkillTemplate.Ability unlockAbilityDueToLevel(Job.JobType jobType, int level){
         return unlockAbilityDueToLevel(jobType, level).copy();
     }
 
@@ -50,12 +49,12 @@ public class Job {
         }
     }
 
-    public void stackGain(int gain){
+    public void addStack(int gain){
         this.currentStack += gain;
         if(currentStack>maxStack) currentStack = maxStack;
     }
 
-    public Map<Integer, SkillBooks.Ability> getUnlockSkills() {
+    public Map<Integer, SkillTemplate.Ability> getUnlockSkills() {
         return unlockSkills;
     }
 }
