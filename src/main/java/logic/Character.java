@@ -45,8 +45,8 @@ public class Character implements Purchasable {
         private String name;
         private int maxiHp = 500;
         private int maxMana = 0;
-        private double hpRegenerate = 10;
-        private double manaRegenerate = 0;
+        private double hpRegenerate = 0.02;
+        private double manaRegenerate = 0.02;
         private int basePw = 50;
         private int baseMagicPw = 10;
         private int baseDefense = 25;
@@ -122,11 +122,20 @@ public class Character implements Purchasable {
         this.actuHp -= dmg;
         if(!isAlive()) actuHp = 0;
     }
-    public void applyRegeneration() {
+    public void applyHpRegeneration() {
         if (isAlive() && hpRegenerate > 0.0) {
             actuHp += (int) (maxiHp*hpRegenerate);
             if (actuHp > maxiHp) {
                 actuHp = maxiHp;
+            }
+        }
+    }
+
+    public void applyManaRegeneration() {
+        if (isAlive() && manaRegenerate > 0.0) {
+            actuMana += (int) (maxiHp*manaRegenerate);
+            if (actuMana > maxMana) {
+                actuMana = maxMana;
             }
         }
     }
@@ -149,7 +158,13 @@ public class Character implements Purchasable {
 
     public void levelUp(){
         this.level++;
-
+        this.maxiHp*=1.2;
+        this.maxMana*=1.1;
+        this.basePw*=1.1;
+        this.baseMagicPw*=1.1;
+        this.baseDefense*=1.1;
+        this.baseMagicDefense*=1.1;
+        /// ///
         this.actuHp = this.maxiHp;
         this.actuMana = this.maxMana;
         //if(this.currenJob != null && currentJob.getSkillUnlockedAtLevel(this.level)!=null){}
