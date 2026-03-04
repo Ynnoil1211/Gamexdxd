@@ -28,7 +28,8 @@ public class Job {
         this.currentStack=0;
     }
     public SkillTemplate.Ability unlockAbilityDueToLevel(Job.JobType jobType, int level){
-        return unlockAbilityDueToLevel(jobType, level).copy();
+        SkillTemplate.Ability abilityUnlocked = unlockSkills.get(level);
+        return abilityUnlocked != null ? abilityUnlocked.copy() : null;
     }
 
     public JobType getJobType() {

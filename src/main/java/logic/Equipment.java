@@ -4,10 +4,15 @@ interface Special{
     Special specialAction(Character target);
 }
 public class Equipment implements Purchasable{
+    public enum Slot{
+        WEAPON, ARMOR, ACCESSORY
+    }
     private String name;
     private String description;
+    private Slot slot;
     private int bonusHp;
     private int bonusDmg;
+    private int bonusMaxMana;
     private int bonusMagicDmg;
     private int bonusDefense;
     private int bonusMagicDefense;
@@ -17,6 +22,10 @@ public class Equipment implements Purchasable{
     private double bonusDodgeChance;
     private double bonusHpRegen;
     private double bonusManaRegen;
+
+    private double bonusLifesteal;
+    private StatusEffect onHitEffect;
+    private double onHitChance;
     //--/
     private int price;
     public Equipment(){}
@@ -24,7 +33,9 @@ public class Equipment implements Purchasable{
     private Equipment(Builder builder){
         this.name = builder.name;
         this.description = builder.description;
+        this.slot = builder.slot;
         this.bonusHp = builder.bonusHp;
+        this.bonusMaxMana = builder.bonusMaxMana;
         this.bonusDmg = builder.bonusDmg;
         this.bonusMagicDmg = builder.bonusMagicDmg;
         this.bonusDefense = builder.bonusDefense;
@@ -35,13 +46,18 @@ public class Equipment implements Purchasable{
         this.bonusDodgeChance = builder.bonusDodgeChance;
         this.bonusHpRegen = builder.bonusHpRegen;
         this.bonusManaRegen = builder.bonusManaRegen;
+        this.bonusLifesteal = builder.bonusLifesteal;
+        this.onHitEffect = builder.onHitEffect;
+        this.onHitChance = builder.onHitChance;
         this.price = builder.price;
     }
 
     public static class Builder{
         private String name = "Borre's Coding skill";
         private String description = "Borre is Gay";
+        private Slot slot = Slot.WEAPON;
         private int bonusHp = 0;
+        private int bonusMaxMana = 0;
         private int bonusDmg = 0;
         private int bonusMagicDmg = 0;
         private int bonusDefense = 0;
@@ -52,15 +68,18 @@ public class Equipment implements Purchasable{
         private double bonusDodgeChance = 0;
         private double bonusHpRegen = 0;
         private double bonusManaRegen= 0;
+        private double bonusLifesteal = 0.0;
         private int price = 0;
 
-        public Builder(String name){
+        public Builder(String name, Slot slot){
             this.name = name;
+            this.slot = slot;
         }
         public Builder name(String name) {this.name = name; return this;}
         public Builder description(String description) {this.description = description; return this;}
         public Builder bonusHp(int bonusHp) {this.bonusHp = bonusHp; return this;}
         public Builder bonusDmg(int bonusDmg) {this.bonusDmg = bonusDmg; return this;}
+        public Builder bonusMaxMana(int bonusMaxMana) {this.bonusMaxMana = bonusMaxMana; return this;}
         public Builder bonusMagicDmg(int bonusMagicDmg) {this.bonusMagicDmg = bonusMagicDmg; return this;}
         public Builder bonusDefense(int bonusDefense){this.bonusDefense = bonusDefense; return this;}
         public Builder bonusMagicDefense(int bonusMagicDefense) {this.bonusMagicDefense = bonusMagicDefense; return this;}
@@ -70,8 +89,13 @@ public class Equipment implements Purchasable{
         public Builder bonusDodgeChance(double bonusDodgeChance) {this.bonusDodgeChance = bonusDodgeChance; return this;}
         public Builder bonusHpRegen(double bonusHpRegen) {this.bonusHpRegen = bonusHpRegen; return this;}
         public Builder bonusManaRegen(double bonusManaRegen) {this.bonusManaRegen = bonusManaRegen; return this;}
+        public Builder lifesteal(double val) { this.bonusLifesteal = val; return this; }
         public Builder price(int price) {this.price = price; return this;}
-
+        public Builder onHitEffect(StatusEffect effect, double chance) {
+            this.onHitEffect = effect;
+            this.onHitChance = chance;
+            return this;
+        }
         public Equipment build(){
             return new Equipment(this);
         }
@@ -80,8 +104,10 @@ public class Equipment implements Purchasable{
         StringBuilder info = new StringBuilder();
         info.append("Name: ").append(name).append("\n");
         info.append("Description: ").append(description).append("\n");
+        info.append("Usage: ").append(slot).append("\n");
         if(getBonusHp()!=0) info.append("Bonus HP: ").append(getBonusHp()).append("\n");
         if(getBonusDmg()!=0) info.append("Bonus DMG: ").append(getBonusDmg()).append("\n");
+        if(getBonusMaxMana()!=0) info.append("Bonus Max Mana: ").append(getBonusMaxMana()).append("\n");
         if(getBonusMagicDmg()!=0) info.append("Bonus Magic DMG: ").append(getBonusMagicDmg()).append("\n");
         if(getBonusDefense()!=0) info.append("Bonus Defense: ").append(getBonusDefense()).append("\n");
         if(getBonusMagicDefense()!=0) info.append("Bonus Magic Defense: ").append(getBonusMagicDefense()).append("\n");
@@ -101,8 +127,16 @@ public class Equipment implements Purchasable{
         return price;
     }
 
+    public Slot getSlot() {
+        return slot;
+    }
+
     public String getName() {
         return name;
+    }
+
+    public int getBonusMaxMana() {
+        return bonusMaxMana;
     }
 
     public String getDescription() {

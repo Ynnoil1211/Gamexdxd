@@ -7,18 +7,16 @@ public class CombatEngine {
     private static final double MAGIC_BONUS_MULT = 1.030;
 
     public static DamageReport calculateDmg(Character attacker, Character target, Map<DamageType, Double> multipliers, StatusEffect effect) {
-        boolean isDodged = Math.random() < target.getDodge();
+        boolean isDodged = Math.random() < target.getTotalDodge();
         DamageReport.Builder reportBuilder = new DamageReport.Builder(attacker.getName(), target.getName())
                 .isDodged(isDodged);
 
         if (isDodged) return reportBuilder.build();
 
-        boolean isCritic = Math.random() < attacker.getCriticChance();
+        boolean isCritic = Math.random() < attacker.getTotalCriticChance();
         reportBuilder.isCritic(isCritic);
-        double critMult = isCritic ? attacker.getCriticDamage() : 1.0;
 
-        int bonusPhys = (attacker.getEquip() != null) ? attacker.getEquip().getBonusDmg() : 0;
-        int bonusMagic = (attacker.getEquip() != null) ? attacker.getEquip().getBonusMagicDmg() : 0;
+        double critMult = isCritic ? attacker.getTotalCriticDamage() : 1.0;
 
         int totalDamageToDeal = 0;
 
@@ -33,44 +31,48 @@ public class CombatEngine {
 
             switch (type) {
                 case PHYSICAL:
-                    double rawPhys = (attacker.getBasePw() + bonusPhys) * mult * PHYS_BONUS_MULT * critMult;
-                    calculatedAmount = (int) (rawPhys * (100.0 / (100.0 + target.getBaseDefense()))); // Armor reduces it
+                    double rawPhys = attacker.getTotalPw() * mult * PHYS_BONUS_MULT * critMult;
+                    calculatedAmount = (int) (rawPhys * (100.0 / (100.0 + target.getTotalDefense())));
                     break;
 
                 case MAGICAL:
-                    double rawMagic = (attacker.getBaseMagicPw() + bonusMagic) * mult * MAGIC_BONUS_MULT * critMult;
-                    calculatedAmount = (int) (rawMagic * (100.0 / (100.0 + target.getBaseMagicDefense()))); // Magic Armor reduces it
+                    double rawMagic = attacker.getTotalMagicPw() * mult * MAGIC_BONUS_MULT * critMult;
+                    calculatedAmount = (int) (rawMagic * (100.0 / (100.0 + target.getTotalMagicDefense())));
                     break;
 
                 case TRUE:
-                    calculatedAmount = (int) (attacker.getBasePw() * mult * critMult);
+                    calculatedAmount = (int) (attacker.getTotalPw() * mult * critMult);
                     break;
 
                 case HEAL:
-                    calculatedAmount = (int) (attacker.getBaseMagicPw() * mult * critMult);
-                    target.receiveHealing(calculatedAmount); // You might want to make a specific target.heal(amount) method later!
+                    calculatedAmount = (int) (attacker.getTotalMagicPw() * mult * critMult);
+                    target.receiveHealing(calculatedAmount);
                     break;
 
                 case POISON:
                     calculatedAmount = (int) (10 * mult);
-                    target.addStatusEffect(new StatusEffect(StatusEffect.EffectType.POISON, calculatedAmount, 2));
+                    target.addStatusEffect(new PoisonEffect("Poison", 2, calculatedAmount));
                     break;
             }
 
             reportBuilder.addAmount(type, calculatedAmount);
-
-            if (type != DamageType.HEAL) {
+            if (type != DamageType.HEAL && type != DamageType.POISON) {
                 totalDamageToDeal += calculatedAmount;
             }
         }
 
-       //dmgDealing
         if (totalDamageToDeal > 0) {
             target.receiveDmg(totalDamageToDeal);
         }
+        double lifestealPct = attacker.getTotalLifesteal();
+        if (lifestealPct > 0.0) {
+            int healAmount = (int) (totalDamageToDeal * lifestealPct);
+            attacker.receiveHealing(healAmount);
+            reportBuilder.lifesteal(healAmount);
+        }
         if (effect != null) {
-            target.addStatusEffect(effect); // Adds it to the Character's active effects list
-            reportBuilder.appliedEffect(effect); // Tells the report to print it
+            target.addStatusEffect(effect);
+            reportBuilder.appliedEffect(effect);
         }
 
         reportBuilder.isKill(!target.isAlive());

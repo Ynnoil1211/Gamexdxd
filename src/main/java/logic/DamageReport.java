@@ -7,6 +7,7 @@ public class DamageReport {
     private final String target;
     private final Map<DamageType, Integer> amounts;
     private final StatusEffect appliedEffect;
+    private final int lifestealAmount;
     private final int totalDmg;
     private final boolean isDodged;
     private final boolean isCritic;
@@ -16,6 +17,7 @@ public class DamageReport {
         this.attacker = builder.attacker;
         this.target = builder.target;
         this.amounts = builder.amounts;
+        this.lifestealAmount = builder.lifestealAmount;
         this.totalDmg = builder.totalDmg;
         this.appliedEffect = builder.appliedEffect;
         this.isDodged = builder.isDodged;
@@ -27,6 +29,7 @@ public class DamageReport {
         private String attacker;
         private String target;
         private Map<DamageType, Integer> amounts = new HashMap<>();
+        private int lifestealAmount = 0;
         private int totalDmg = 0;
         private StatusEffect appliedEffect = null;
         private boolean isDodged = false;
@@ -50,6 +53,10 @@ public class DamageReport {
 
         public Builder appliedEffect(StatusEffect effect) {
             this.appliedEffect = effect;
+            return this;
+        }
+        public Builder lifesteal(int amount) {
+            this.lifestealAmount = amount;
             return this;
         }
         public Builder isDodged(boolean isDodged) { this.isDodged = isDodged; return this; }
@@ -77,13 +84,17 @@ public class DamageReport {
                 log.append("- ").append(entry.getKey()).append(" Amount: ").append(entry.getValue()).append("\n");
             }
 
-            // Only show total damage if it was an attack
+
             if (this.totalDmg > 0) {
                 log.append("Total Damage Dealt: ").append(this.totalDmg).append("\n");
             }
+
+            if (this.lifestealAmount > 0){
+                log.append("Lifesteal: ").append(this.lifestealAmount).append("\n");
+            }
             if (this.appliedEffect != null) {
                 log.append("AFFLICTED: Target is suffering from ")
-                        .append(this.appliedEffect.getType()) // e.g., POISON
+                        .append(this.appliedEffect.getName()) // e.g., POISON
                         .append(" for ")
                         .append(this.appliedEffect.getDuration()) // e.g., 3
                         .append(" turns!\n");

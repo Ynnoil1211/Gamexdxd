@@ -1,8 +1,6 @@
 package logic;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 public class Character implements Purchasable {
     private String name;
@@ -13,7 +11,7 @@ public class Character implements Purchasable {
     private List<SkillTemplate.Ability> unlockAbilities = new ArrayList<>();
     private SkillTemplate.Ability[] activeAbilities = new SkillTemplate.Ability[4];
     private final List<StatusEffect> activeEffects = new ArrayList<>();
-    private Equipment equip;
+    private Map<Equipment.Slot, Equipment> equipmentMap;
     private final boolean isEnemy;
     private int price;
     //---//
@@ -33,7 +31,7 @@ public class Character implements Purchasable {
         this.criticDamage = builder.criticDamage;
         this.dodge = builder.dodge;
         this.speed = builder.speed;
-        this.equip = builder.equip;
+        this.equipmentMap = builder.equipmentMap;
         this.isEnemy = builder.isEnemy;
         this.price = builder.price;
         this.level = builder.level;
@@ -56,7 +54,7 @@ public class Character implements Purchasable {
         private double criticDamage = 2.0;
         private double dodge = 0.1;
         private double speed = 10.0;
-        private Equipment equip = new Equipment.Builder("Borre's Coding skill (0).").build();;;;;
+        private Map<Equipment.Slot, Equipment> equipmentMap = new HashMap<>();
         private int level = 0, exp = 0;
         private Job currentJob = null;
         private List<SkillTemplate.Ability> unlockAbilities = new ArrayList<>();
@@ -80,12 +78,22 @@ public class Character implements Purchasable {
         public Builder criticDamage(double criticDamage){ this.criticDamage = criticDamage; return this; }
         public Builder dodge(double dodge) { this.dodge = dodge; return this; }
         public Builder speed(double speed) { this.speed = speed; return this; }
-        public Builder equip(Equipment equip) { this.equip = equip; return this; }
         public Builder isEnemy(boolean isEnemy) { this.isEnemy = isEnemy; return this; }
         public Builder price(int price) { this.price = price; return this; }
         public Builder level(int level) { this.level = level; return this; }
         public Builder exp(int exp) { this.exp = exp; return this;}
         public Builder currentJob(Job job) { this.currentJob = job; return this;}
+        public Builder equipment(Equipment equip) {
+            if (equip != null) {
+                this.equipmentMap.put(equip.getSlot(), equip);
+            }
+            return this;
+        }
+        public Builder equipmentMap(Map<Equipment.Slot, Equipment> equipmentMap) {
+            this.equipmentMap = new HashMap<>(equipmentMap);
+            return this;
+        }
+
         public Builder activeAbilities(SkillTemplate.Ability... abilities) { //varargs
             for(int i = 0; (i < abilities.length) && (i < 4); i++){
                 if(abilities[i] != null){
@@ -110,15 +118,15 @@ public class Character implements Purchasable {
         return getActuHp()>0;
     }
 
-    public void attack(int skillSlot, Character enemy) {
+    public void attack(int skillSlot, List<Character> enemies) {
         int index = skillSlot - 1;
         if (index >= 0 && index < 4 && this.activeAbilities[index] != null) {
             SkillTemplate.Ability chosenAbility = this.activeAbilities[index];
-
-            DamageReport report = chosenAbility.execute(this, enemy);
-
-            if (report != null) {
-                report.combatReport();
+            List<DamageReport> report = chosenAbility.execute(this, enemies);
+            for(DamageReport re : report) {
+                if (re != null) {
+                    re.combatReport();
+                }
             }
 
         } else {
@@ -126,21 +134,150 @@ public class Character implements Purchasable {
         }
     }
     //Effects processing:
-    public void addStatusEffect(StatusEffect effect) {
-        this.activeEffects.add(effect.copy());
-        System.out.println(this.getName() + " was afflicted with " + effect.getType() + "!");
+    public void addStatusEffect(StatusEffect newEffect) {
+        for (StatusEffect e : activeEffects) {
+            if (e.getClass().equals(newEffect.getClass())) {
+                e.stack(newEffect);
+                return;
+            }
+        }
+        activeEffects.add(newEffect);
+        newEffect.onApply(this);
     }
-    public void processEffectsOnTurnStart() {
-        Iterator<StatusEffect> iterator = activeEffects.iterator();
-        while (iterator.hasNext()) {
-            StatusEffect effect = iterator.next();
-            effect.processEffect(this);
 
-            if (effect.getDuration() <= 0) {
-                iterator.remove();
+    public void startTurn() {
+        // Iterate safely to allow removal during iteration
+        Iterator<StatusEffect> it = activeEffects.iterator();
+        while (it.hasNext()) {
+            StatusEffect effect = it.next();
+
+            // Logic for Stuns
+            if (effect.preventsAction()) {
+                System.out.println(name + " is CC'd and skips turn!");
+                // return; // Uncomment to actually stop the turn
+            }
+
+            boolean expired = effect.tick(this);
+            if (expired) {
+                it.remove();
             }
         }
     }
+
+    /**
+     *
+     *  public boolean isDmgHealing(){
+     *         return this.activeEffects.stream().anyMatch(StatusEffect::isDmgHealing);
+     *     }
+     */
+    //Stat INT calculate:
+
+    public int getEffectiveStat(StatType type, int baseValue) {
+        int total = baseValue;
+        for (StatusEffect e : activeEffects) {
+            total += e.getStatModifier(type);
+        }
+        return total;
+    }
+    public int getTotalMaxHp() {
+        int total = this.maxiHp;
+        for (Equipment eq : equipmentMap.values()) total += eq.getBonusHp();
+        // Max HP should generally never drop below 1, even with debuffs
+        return Math.max(1, getEffectiveStat(StatType.MAX_HP, total));
+    }
+
+    public int getTotalMaxMana() {
+        int total = this.maxMana;
+        for (Equipment eq : equipmentMap.values()) total += eq.getBonusMaxMana();
+        return Math.max(0, getEffectiveStat(StatType.MAX_MANA, total));
+    }
+
+    public int getTotalPw() {
+        int total = this.basePw;
+        for (Equipment eq : equipmentMap.values()) total += eq.getBonusDmg();
+        return Math.max(0, getEffectiveStat(StatType.POWER, total));
+    }
+
+    public int getTotalMagicPw() {
+        int total = this.baseMagicPw;
+        for (Equipment eq : equipmentMap.values()) total += eq.getBonusMagicDmg();
+        return Math.max(0, getEffectiveStat(StatType.MAGIC_POWER, total));
+    }
+
+    public int getTotalDefense() {
+        int total = this.baseDefense;
+        for (Equipment eq : equipmentMap.values()) total += eq.getBonusDefense();
+        return Math.max(0, getEffectiveStat(StatType.DEFENSE, total));
+    }
+
+    public int getTotalMagicDefense() {
+        int total = this.baseMagicDefense;
+        for (Equipment eq : equipmentMap.values()) total += eq.getBonusMagicDefense();
+        return Math.max(0, getEffectiveStat(StatType.MAGIC_DEFENSE, total));
+    }
+
+    //DOUBLE STAT CALCULATE
+    private int getEffectModSum(StatType type) {
+        int sum = 0;
+        for (StatusEffect e : activeEffects) {
+            sum += e.getStatModifier(type);
+        }
+        return sum;
+    }
+    public double getTotalHpRegenerate() {
+        double total = this.hpRegenerate;
+        double effectMod = getEffectModSum(StatType.HP_REGEN) / 100.0;
+        return Math.max(0.0, total + effectMod);
+    }
+
+    public double getTotalManaRegenerate() {
+        double total = this.manaRegenerate;
+        double effectMod = getEffectModSum(StatType.MANA_REGEN) / 100.0;
+        return Math.max(0.0, total + effectMod);
+    }
+
+    public double getTotalCriticChance() {
+        double total = this.criticChance;
+        for (Equipment eq : equipmentMap.values()) total += eq.getBonusCritChance();
+
+        double effectMod = getEffectModSum(StatType.CRIT_CHANCE) / 100.0;
+        return Math.max(0.0, total + effectMod);
+    }
+
+    public double getTotalCriticDamage() {
+        double total = this.criticDamage;
+        // If you ever add Crit Damage to Equipment, loop through it here
+
+        double effectMod = getEffectModSum(StatType.CRIT_DAMAGE) / 100.0;
+        return Math.max(1.0, total + effectMod); // Crit damage shouldn't drop below 1.0 (100% normal damage)
+    }
+
+    public double getTotalDodge(){
+        double total = this.dodge;
+        for (Equipment eq : equipmentMap.values()) total += eq.getBonusDodgeChance();
+
+        double effectMod = getEffectModSum(StatType.DODGE) / 100.0;
+        return Math.min(0.90, Math.max(0.0, total + effectMod)); // Cap dodge at 90% so characters aren't invincible
+    }
+
+    public double getTotalSpeed() {
+        double total = this.speed;
+        for (Equipment eq : equipmentMap.values()) total += eq.getBonusSpeed();
+
+        // Speed is a flat number, so we DO NOT divide by 100.0 here!
+        int effectMod = getEffectModSum(StatType.SPEED);
+        return Math.max(0.0, total + effectMod);
+    }
+
+    public double getTotalLifesteal() {
+        double total = 0.0;
+        for (Equipment eq : equipmentMap.values()) {
+            total += eq.getBonusLifesteal();
+        }
+        total += getEffectModSum(StatType.LIFE_STEAL) / 100.0;
+        return Math.max(0.0, total);
+    }
+
     public boolean hasStatusEffect(){
         return !this.activeEffects.isEmpty();
     }
@@ -219,7 +356,8 @@ public class Character implements Purchasable {
                 .manaRegenerate(this.manaRegenerate).basePw(this.basePw).baseMagicPw(this.baseMagicPw)
                 .baseDefense(this.baseDefense).baseMagicDefense(this.baseMagicDefense)
                 .criticChance(this.criticChance).criticDamage(this.criticDamage)
-                .dodge(this.dodge).speed(this.speed).equip(this.equip)
+                .dodge(this.dodge).speed(this.speed)
+                .equipmentMap(this.equipmentMap)
                 .level(this.level).currentJob(this.currentJob)
                 .activeAbilities(cloneActive).unlockAbilities(cloneUnlock, cloneActive)
                 .isEnemy(this.isEnemy).price(this.price).build();
@@ -237,16 +375,19 @@ public class Character implements Purchasable {
         if (this.baseMagicDefense > 0) info.append("Magic Defense: ").append(this.baseMagicDefense).append("\n");
         if (this.criticChance > 0) info.append("Crit Chance: ").append((int)(this.criticChance * 100)).append("%\n");
         if (this.dodge > 0) info.append("Dodge: ").append((int)(this.dodge * 100)).append("%\n");
-        if (this.equip != null) info.append("Equipped: ").append(this.equip.getName()).append("\n");
-        if (this.activeAbilities != null) info.append("List of Actives Abilities: \n");
-        assert activeAbilities != null;
-        for(SkillTemplate.Ability ability : activeAbilities){info.append(ability.getAbilityDisplayName()).append("\n");}
-        info.append("\n");
-        if(this.unlockAbilities != null) info.append("List of Unlock Abilities: \n");
-        assert unlockAbilities != null;
-        for(SkillTemplate.Ability ability : unlockAbilities){info.append(ability.getAbilityDisplayName()).append("\n");}
-        info.append("\n");
-        if (this.price > 0) info.append("Price: ").append(this.price).append("\n");
+        if (!this.equipmentMap.isEmpty()) {
+            info.append("Equipment:\n");
+            for (Equipment eq : this.equipmentMap.values()) {
+                info.append(" - [").append(eq.getSlot()).append("] ").append(eq.getName()).append("\n");
+            }
+        }
+        if (this.activeAbilities != null) {
+            info.append("List of Actives Abilities: \n");
+            for (SkillTemplate.Ability ability : activeAbilities) {
+                if(ability != null) info.append(ability.getAbilityDisplayName()).append("\n");
+            }
+            info.append("\n");
+        }
         return info.toString();
     }
 
@@ -309,10 +450,6 @@ public class Character implements Purchasable {
         return dodge;
     }
 
-    public Equipment getEquip() {
-        return equip;
-    }
-
     public double getSpeed() {
         return speed;
     }
@@ -339,5 +476,13 @@ public class Character implements Purchasable {
 
     public SkillTemplate.Ability[] getActiveAbilities() {
         return activeAbilities;
+    }
+
+    public List<StatusEffect> getActiveEffects() {
+        return activeEffects;
+    }
+
+    public Map<Equipment.Slot, Equipment> getEquipmentMap() {
+        return equipmentMap;
     }
 }

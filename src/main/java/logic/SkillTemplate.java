@@ -1,11 +1,13 @@
 package logic;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class SkillTemplate {
     public static interface Ability {
-        DamageReport execute(Character attacker, Character target);
+        List<DamageReport> execute(Character attacker, List<Character> targets);
 
         Ability copy();
 
@@ -106,7 +108,8 @@ public class SkillTemplate {
 
 
         @Override
-        public DamageReport execute(Character self, Character enemy) {
+        public List<DamageReport> execute(Character self, List<Character> targets) {
+            List<DamageReport> finalReports = new ArrayList<>();
             if (self.getCurrentJob() == null || self.getCurrentJob().getJobType() != this.requiredJob) {
                 System.out.println("Wrong job class to use this ability!");
                 return null;
@@ -122,13 +125,16 @@ public class SkillTemplate {
             if (this.manaCost > 0) self.reduceMana(this.manaCost);
             if (this.stackCost > 0) self.getCurrentJob().consumeStack(this.stackCost);
 
-            DamageReport report = CombatEngine.calculateDmg(self, enemy, this.multipliers, this.applicableEffect);
+            for(Character enemy : targets){
+                DamageReport report = CombatEngine.calculateDmg(self, enemy, this.multipliers, this.applicableEffect);
+                finalReports.add(report);
+            }
             if (this.stackGain > 0) {
                 self.getCurrentJob().addStack(this.stackGain); // Fixed method name
             }
 
 
-            return report;
+            return finalReports;
         }
 
         @Override
