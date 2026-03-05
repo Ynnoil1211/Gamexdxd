@@ -12,6 +12,8 @@ public class DamageReport {
     private final boolean isDodged;
     private final boolean isCritic;
     private final boolean isKill;
+    private final String abilityName;
+    private final AbilityType type;
 
     private DamageReport(Builder builder) {
         this.attacker = builder.attacker;
@@ -23,6 +25,8 @@ public class DamageReport {
         this.isDodged = builder.isDodged;
         this.isCritic = builder.isCritic;
         this.isKill = builder.isKill;
+        this.abilityName = builder.abilityName;
+        this.type = builder.type;
     }
 
     public static class Builder {
@@ -35,6 +39,9 @@ public class DamageReport {
         private boolean isDodged = false;
         private boolean isCritic = false;
         private boolean isKill = false;
+        private String abilityName = "A wonderful name";
+        private AbilityType type = AbilityType.OFFENSIVE;
+
 
         public Builder(String attacker, String target) {
             this.attacker = attacker;
@@ -62,6 +69,8 @@ public class DamageReport {
         public Builder isDodged(boolean isDodged) { this.isDodged = isDodged; return this; }
         public Builder isCritic(boolean isCritic) { this.isCritic = isCritic; return this; }
         public Builder isKill(boolean isKill) { this.isKill = isKill; return this; }
+        public Builder abilityName(String name) { this.abilityName = name; return this;}
+        public Builder abilityType(AbilityType type) {this.type = type; return this;}
 
         public DamageReport build() {
             return new DamageReport(this);
@@ -72,35 +81,48 @@ public class DamageReport {
         StringBuilder log = new StringBuilder();
 
         log.append("=== COMBAT REPORT ===\n");
-        log.append("Attacker: ").append(this.attacker).append("\n");
-        log.append("Target: ").append(this.target).append("\n");
+        log.append(this.attacker).append(" used ").append(this.abilityName).append(" on ")
+                .append(this.target).append("! \n");
 
-        if (this.isDodged) {
-            log.append("Result: DODGEEEEEEEEEDDD! QWQ\n");
-        } else {
-            if (this.isCritic) log.append("CRITIC HIT!\n");
+        if (this.type == AbilityType.HEALING) {
+            if (this.isCritic) log.append("CRITICAL HEAL!\n");
 
             for (Map.Entry<DamageType, Integer> entry : amounts.entrySet()) {
-                log.append("- ").append(entry.getKey()).append(" Amount: ").append(entry.getValue()).append("\n");
+                log.append(this.target).append( "- Restored: ").append(entry.getValue()).append(" HP\n");
             }
 
-
-            if (this.totalDmg > 0) {
-                log.append("Total Damage Dealt: ").append(this.totalDmg).append("\n");
-            }
-
-            if (this.lifestealAmount > 0){
-                log.append("Lifesteal: ").append(this.lifestealAmount).append("\n");
-            }
             if (this.appliedEffect != null) {
-                log.append("AFFLICTED: Target is suffering from ")
-                        .append(this.appliedEffect.getName()) // e.g., POISON
-                        .append(" for ")
-                        .append(this.appliedEffect.getDuration()) // e.g., 3
-                        .append(" turns!\n");
+                log.append("APPLIED: Target gained ").append(this.appliedEffect.getName()).append("!\n");
             }
+        } else {
+            if (this.isDodged) {
+                log.append("BUT IT WAS DODGEEEEEEEEEDDD! QWQ\n");
+            } else {
+                if (this.isCritic) log.append("IT WAS A CRITIC HIIITTTTTTTTTT!!!\n");
 
-            if (this.isKill) log.append("Result: KILLLLLLLEDDDDDD.\n");
+                for (Map.Entry<DamageType, Integer> entry : amounts.entrySet()) {
+                    if (entry.getKey() == DamageType.HEAL)
+                        log.append("- ").append(this.abilityName).append(" heal: ").append(entry.getValue()).append("\n");
+                }
+
+
+                if (this.totalDmg > 0) {
+                    log.append("Total Damage Dealt: ").append(this.totalDmg).append("\n");
+                }
+
+                if (this.lifestealAmount > 0) {
+                    log.append("Lifesteal: ").append(this.lifestealAmount).append("\n");
+                }
+                if (this.appliedEffect != null) {
+                    log.append("AFFLICTED: Target is suffering from ")
+                            .append(this.appliedEffect.getName())
+                            .append(" for ")
+                            .append(this.appliedEffect.getDuration())
+                            .append(" turns!\n");
+                }
+
+                if (this.isKill) log.append("Result: KILLLLLLLEDDDDDD.\n");
+            }
         }
         log.append("=====================\n");
 

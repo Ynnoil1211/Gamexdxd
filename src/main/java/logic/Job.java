@@ -2,25 +2,25 @@ package logic;
 import java.util.Map;
 
 public class Job {
-    public static enum JobType{
-        BARBARIAN("Barbarian"),
-        BREAKER("Breaker"),
-        WIZARD("Wizard"),
-        VESTAL("Vestal"),
-        DEMON_HUNTER("Demon Hunter");
-        private final String displayName;
-
-        JobType(String displayName){
-            this.displayName = displayName;
+        public static enum JobType{
+            BARBARIAN("Barbarian"), // warrior - MELEE; +++hp +++defense, mana for
+            BREAKER("Breaker"),     // stacker - MELEE; +hp, ++dmg, need stacks for abilities: melee + AOE abilities
+            WIZARD("Wizard"),       // mage - RANGED; +hp, +++magicDmg,  need mana for abilities: AOE abilities + selfBuffing(replenish mana, higher dmg)
+            VESTAL("Vestal"),       // healer - RANGED; +hp, -dmg, need mana for abilities: team healing, team buff;
+            JOKER("Joker"),         // debuffer - RANGED; -hp, ++dmg, need mana for abilities: rival team debuff, apply effects, make their dmg healing;
+            WHITE("White"),         // stunner - Melee; ++hp, -dmg, need mana for abilities: stunning, cc, dmg...;
+            DEMON_HUNTER("Demon Hunter"); //adc - RANGED; --hp, +++dmg, mana for abilities: selfBuffing, executing... (aoe attack? -- not implemented -> builds for this).
+            private final String displayName;
+            JobType(String displayName){
+                this.displayName = displayName;
+            }
+            public String getDisplayName(){
+                return displayName;
+            }
         }
-        public String getDisplayName(){
-            return displayName;
-        }
-    }
-
     private JobType jobType;
     private int currentStack;
-    private final int maxStack = 6;
+    private final int maxStack = 10;
     private Map<Integer, SkillTemplate.Ability> unlockSkills;
 
     public Job(JobType jobType){

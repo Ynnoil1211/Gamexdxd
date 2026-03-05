@@ -1,9 +1,6 @@
 package logic;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class SkillTemplate {
     public static interface Ability {
@@ -16,6 +13,14 @@ public class SkillTemplate {
         boolean[] getValidLaunchRanks();
 
         boolean[] getValidTargetRanks();
+
+        String getName();
+
+        Map<DamageType, Double> getMultipliers();
+
+        StatusEffect getApplicableEffect();
+
+        AbilityType getAbilityType();
     }
 
     public static class BaseAttack implements Ability {
@@ -29,6 +34,7 @@ public class SkillTemplate {
         private final boolean[] launchBox;
         private Map<DamageType, Double> multipliers = new HashMap<>();
         private StatusEffect applicableEffect;
+        private AbilityType abilityType;
 
         private BaseAttack(Builder builder) {
             this.name = builder.name;
@@ -40,7 +46,8 @@ public class SkillTemplate {
             this.targetBox = builder.targetBox;
             this.launchBox = builder.launchBox;
             this.multipliers = new HashMap<>(builder.multipliers);
-            this.applicableEffect = builder.applicableEffect==null?null:builder.applicableEffect.copy();
+            this.applicableEffect = builder.applicableEffect == null ? null : builder.applicableEffect.copy();
+            this.abilityType = builder.abilityType;
         }
 
         public static class Builder {
@@ -54,6 +61,7 @@ public class SkillTemplate {
             private boolean[] launchBox = {true, true, false, false};
             private Map<DamageType, Double> multipliers = new HashMap<>();
             private StatusEffect applicableEffect = null;
+            private AbilityType abilityType = AbilityType.OFFENSIVE;
 
             public Builder(String name, int requiredLevel, Job.JobType requiredJob) {
                 this.name = name;
@@ -96,8 +104,13 @@ public class SkillTemplate {
                 return this;
             }
 
-            public Builder applicableEffect(StatusEffect effect){
+            public Builder applicableEffect(StatusEffect effect) {
                 this.applicableEffect = effect;
+                return this;
+            }
+
+            public Builder abilityType(AbilityType type){
+                this.abilityType = type;
                 return this;
             }
 
@@ -112,25 +125,25 @@ public class SkillTemplate {
             List<DamageReport> finalReports = new ArrayList<>();
             if (self.getCurrentJob() == null || self.getCurrentJob().getJobType() != this.requiredJob) {
                 System.out.println("Wrong job class to use this ability!");
-                return null;
+                return Collections.emptyList();
             }
             if (this.manaCost > 0 && self.getActuMana() < this.manaCost) {
                 System.out.println(self.getName() + " doesn't have enough mana!");
-                return null;
+                return Collections.emptyList();
             }
             if (this.stackCost > 0 && self.getCurrentJob().getCurrentStack() < this.stackCost) {
                 System.out.println(self.getName() + " doesn't have enough stacks!");
-                return null;
+                return Collections.emptyList();
             }
             if (this.manaCost > 0) self.reduceMana(this.manaCost);
             if (this.stackCost > 0) self.getCurrentJob().consumeStack(this.stackCost);
 
-            for(Character enemy : targets){
-                DamageReport report = CombatEngine.calculateDmg(self, enemy, this.multipliers, this.applicableEffect);
+            for (Character enemy : targets) {
+                DamageReport report = CombatEngine.calculateDmg(self, enemy, this);
                 finalReports.add(report);
             }
             if (this.stackGain > 0) {
-                self.getCurrentJob().addStack(this.stackGain); // Fixed method name
+                self.getCurrentJob().addStack(this.stackGain);
             }
 
 
@@ -162,6 +175,7 @@ public class SkillTemplate {
             if (this.stackGain != 0) info.append("Stack Gain: ").append(this.stackGain + "\n");
             return info.toString();
         }
+
         @Override
         public boolean[] getValidLaunchRanks() {
             return launchBox;
@@ -170,6 +184,26 @@ public class SkillTemplate {
         @Override
         public boolean[] getValidTargetRanks() {
             return targetBox;
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public Map<DamageType, Double> getMultipliers() {
+            return multipliers;
+        }
+
+        @Override
+        public StatusEffect getApplicableEffect() {
+            return applicableEffect;
+        }
+
+        @Override
+        public AbilityType getAbilityType(){
+            return abilityType;
         }
     }
 }

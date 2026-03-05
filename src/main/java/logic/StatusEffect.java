@@ -31,16 +31,16 @@ public abstract class StatusEffect {
     }
 
     public boolean tick(Character target) {
-        if (duration <= 0) return true; // Return true if expired
+        if (duration <= 0) return true; // Expired
 
-        onTick(target); // Execute specific logic
+        onTick(target); //Apply
         duration--;
 
         if (duration <= 0) {
             onRemove(target);
             return true; // Expired
         }
-        return false; // Still active
+        return false; // active
     }
 
     public void stack(StatusEffect newEffect) {
@@ -66,6 +66,8 @@ public abstract class StatusEffect {
     public int getPower() {
         return power;
     }
+
+    public abstract StatusEffect copy();
 }
 class PoisonEffect extends StatusEffect {
     public PoisonEffect(String name, int duration, int power) {
@@ -84,7 +86,7 @@ class PoisonEffect extends StatusEffect {
         this.power += newEffect.power; // Increase damage
         System.out.println("Poison intensifies! Current power: " + this.power);
     }
-
+    @Override
     public PoisonEffect copy(){
         return new PoisonEffect(this.name, this.duration, this.power);
     }
@@ -109,6 +111,7 @@ class BleedEffect extends StatusEffect {
         System.out.println("Hurt intensifies! Current power: " + this.power);
     }
 
+    @Override
     public BleedEffect copy(){
         return new BleedEffect(this.name, this.duration, this.power);
     }
@@ -134,11 +137,14 @@ class BleedEffect extends StatusEffect {
         System.out.println("Stunning time increase! Current duration: " + this.duration);
     }
 
+     @Override
      public StunEffect copy(){
          return new StunEffect(this.name, this.duration);
      }
 
  }
+
+
 
 /**
  * class DmgHealingEffect extends StatusEffect{

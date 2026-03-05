@@ -146,15 +146,12 @@ public class Character implements Purchasable {
     }
 
     public void startTurn() {
-        // Iterate safely to allow removal during iteration
         Iterator<StatusEffect> it = activeEffects.iterator();
         while (it.hasNext()) {
             StatusEffect effect = it.next();
 
-            // Logic for Stuns
             if (effect.preventsAction()) {
                 System.out.println(name + " is CC'd and skips turn!");
-                // return; // Uncomment to actually stop the turn
             }
 
             boolean expired = effect.tick(this);
