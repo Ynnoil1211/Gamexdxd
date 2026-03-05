@@ -33,8 +33,8 @@ public class SkillTemplate {
         private final boolean[] targetBox;
         private final boolean[] launchBox;
         private Map<DamageType, Double> multipliers = new HashMap<>();
-        private StatusEffect applicableEffect;
         private AbilityType abilityType;
+        private StatusEffect applicableEffect;
 
         private BaseAttack(Builder builder) {
             this.name = builder.name;
@@ -152,7 +152,7 @@ public class SkillTemplate {
 
         @Override
         public Ability copy() {
-            return new BaseAttack.Builder(this.name, this.requiredLevel, this.requiredJob)
+            return new Builder(this.name, this.requiredLevel, this.requiredJob)
                     .manaCost(this.manaCost)
                     .stackCost(this.stackCost)
                     .stackGain(this.stackGain)
@@ -160,6 +160,7 @@ public class SkillTemplate {
                     .launchBox(this.launchBox.clone())
                     .setMultipliers(this.multipliers)
                     .applicableEffect(this.applicableEffect)
+                    .abilityType(this.abilityType)
                     .build();
         }
 

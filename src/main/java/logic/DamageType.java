@@ -11,7 +11,6 @@ public enum DamageType {
 
     private final String displayName;
 
-    // Constructor for the enum
     DamageType(String displayName) {
         this.displayName = displayName;
     }

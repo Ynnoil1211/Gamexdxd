@@ -115,7 +115,13 @@ public class Character implements Purchasable {
     }
 
     public boolean isAlive(){
-        return getActuHp()>0;
+        return actuHp>0;
+    }
+
+    public void handleDeath(){
+        this.actuHp = 0;
+        this.actuMana = 0;
+        this.activeEffects.clear();
     }
 
     public void attack(int skillSlot, List<Character> enemies) {
@@ -179,7 +185,6 @@ public class Character implements Purchasable {
     public int getTotalMaxHp() {
         int total = this.maxiHp;
         for (Equipment eq : equipmentMap.values()) total += eq.getBonusHp();
-        // Max HP should generally never drop below 1, even with debuffs
         return Math.max(1, getEffectiveStat(StatType.MAX_HP, total));
     }
 
@@ -223,12 +228,14 @@ public class Character implements Purchasable {
     }
     public double getTotalHpRegenerate() {
         double total = this.hpRegenerate;
+        for (Equipment eq : equipmentMap.values()) total += eq.getBonusHpRegen();
         double effectMod = getEffectModSum(StatType.HP_REGEN) / 100.0;
         return Math.max(0.0, total + effectMod);
     }
 
     public double getTotalManaRegenerate() {
         double total = this.manaRegenerate;
+        for (Equipment eq : equipmentMap.values()) total += eq.getBonusManaRegen();
         double effectMod = getEffectModSum(StatType.MANA_REGEN) / 100.0;
         return Math.max(0.0, total + effectMod);
     }
@@ -236,17 +243,15 @@ public class Character implements Purchasable {
     public double getTotalCriticChance() {
         double total = this.criticChance;
         for (Equipment eq : equipmentMap.values()) total += eq.getBonusCritChance();
-
         double effectMod = getEffectModSum(StatType.CRIT_CHANCE) / 100.0;
         return Math.max(0.0, total + effectMod);
     }
 
     public double getTotalCriticDamage() {
         double total = this.criticDamage;
-        // If you ever add Crit Damage to Equipment, loop through it here
-
+        for (Equipment eq : equipmentMap.values()) total += eq.getBonusCritDmg();
         double effectMod = getEffectModSum(StatType.CRIT_DAMAGE) / 100.0;
-        return Math.max(1.0, total + effectMod); // Crit damage shouldn't drop below 1.0 (100% normal damage)
+        return Math.max(1.0, total + effectMod);
     }
 
     public double getTotalDodge(){
@@ -261,7 +266,6 @@ public class Character implements Purchasable {
         double total = this.speed;
         for (Equipment eq : equipmentMap.values()) total += eq.getBonusSpeed();
 
-        // Speed is a flat number, so we DO NOT divide by 100.0 here!
         int effectMod = getEffectModSum(StatType.SPEED);
         return Math.max(0.0, total + effectMod);
     }
@@ -281,20 +285,25 @@ public class Character implements Purchasable {
 
     public void receiveDmg(int dmg){
         this.actuHp -= dmg;
-        if(!isAlive()) actuHp = 0;
+        if(this.actuHp <= 0){
+            this.actuHp = 0;
+            handleDeath();
+        }
     }
     public void applyHpRegeneration() {
-        if (isAlive() && hpRegenerate > 0.0) {
-            actuHp += (int) (maxiHp*hpRegenerate);
-            if (actuHp > maxiHp) {
-                actuHp = maxiHp;
+        if (isAlive() && getTotalHpRegenerate() > 0.0) {
+            int maxHp = getTotalMaxHp();
+            actuHp += (int) (maxHp * getTotalHpRegenerate());
+            if (actuHp > maxHp) {
+                actuHp = maxHp;
             }
         }
     }
 
     public void applyManaRegeneration() {
-        if (isAlive() && manaRegenerate > 0.0) {
-            actuMana += (int) (maxiHp*manaRegenerate);
+        if (isAlive() && getTotalManaRegenerate() > 0.0) {
+            int maxMana = getTotalMaxMana();
+            actuMana += (int) (maxMana * getTotalManaRegenerate());
             if (actuMana > maxMana) {
                 actuMana = maxMana;
             }
@@ -302,8 +311,53 @@ public class Character implements Purchasable {
     }
 
     public void receiveHealing(int amount){
+        if (!isAlive()) {
+            return;
+        }
         this.actuHp += amount;
-        if(this.actuHp > this.maxiHp) this.actuHp = this.maxiHp;
+        int maxHp = getTotalMaxHp();
+
+        if (this.actuHp > maxHp) {
+            this.actuHp = maxHp;
+        }
+    }
+
+    public void validateHealthBounds(){
+        int currentMax = getTotalMaxHp();
+
+        if(this.actuHp>currentMax){
+            this.actuHp = currentMax;
+        }
+    }
+
+    public void equipItem(Equipment newGear) {
+        int oldMaxHp = getTotalMaxHp();
+        double healthPercentage = (double) this.actuHp / oldMaxHp;
+        int oldMaxMana = getTotalMaxMana();
+        double manaPercentage = oldMaxMana > 0 ? (double) this.actuMana / oldMaxMana : 0.0;
+
+        this.equipmentMap.put(newGear.getSlot(), newGear);
+        int newMaxHp = getTotalMaxHp();
+
+        this.actuMana = (int) (getTotalMaxMana() * manaPercentage);
+        this.actuHp = (int) (newMaxHp * healthPercentage);
+    }
+
+    public Equipment unequipItem(Equipment.Slot slot) {
+        if (!this.equipmentMap.containsKey(slot)) return null;
+
+        int oldMaxHp = getTotalMaxHp();
+        double healthPercentage = (double) this.actuHp / oldMaxHp;
+
+        int oldMaxMana = getTotalMaxMana();
+        double manaPercentage = oldMaxMana > 0 ? (double) this.actuMana / oldMaxMana : 0.0;
+
+        Equipment removedItem = this.equipmentMap.remove(slot);
+
+        this.actuHp = (int) (getTotalMaxHp() * healthPercentage);
+        this.actuMana = (int) (getTotalMaxMana() * manaPercentage);
+
+        return removedItem;
     }
 
     @Override
@@ -332,8 +386,8 @@ public class Character implements Purchasable {
         this.baseDefense*=1.1;
         this.baseMagicDefense*=1.1;
         //refreshes:
-        this.actuHp = this.maxiHp;
-        this.actuMana = this.maxMana;
+        this.actuHp = getTotalMaxHp();
+        this.actuMana = getTotalMaxMana();
         //if(this.currenJob != null && currentJob.getSkillUnlockedAtLevel(this.level)!=null){}
     }
 
@@ -363,15 +417,18 @@ public class Character implements Purchasable {
     public String getCharacterInfo() {
         StringBuilder info = new StringBuilder();
         info.append("=== ").append(this.name).append(" ===\n");
-        info.append("HP: ").append(this.actuHp).append(" / ").append(this.maxiHp).append("\n");
-        info.append("Power: ").append(this.basePw).append("\n");
-        info.append("Defense: ").append(this.baseDefense).append("\n");
-        info.append("Speed: ").append(String.format("%.2f", this.speed)).append("\n");
-        if (this.maxMana > 0) info.append("Mana: ").append(this.actuMana).append(" / ").append(this.maxMana).append("\n");
-        if (this.baseMagicPw > 0) info.append("Magic Power: ").append(this.baseMagicPw).append("\n");
-        if (this.baseMagicDefense > 0) info.append("Magic Defense: ").append(this.baseMagicDefense).append("\n");
-        if (this.criticChance > 0) info.append("Crit Chance: ").append((int)(this.criticChance * 100)).append("%\n");
-        if (this.dodge > 0) info.append("Dodge: ").append((int)(this.dodge * 100)).append("%\n");
+        // Use getTotal...() for all display stats!
+        info.append("HP: ").append(this.actuHp).append(" / ").append(getTotalMaxHp()).append("\n");
+        info.append("Power: ").append(getTotalPw()).append("\n");
+        info.append("Defense: ").append(getTotalDefense()).append("\n");
+        info.append("Speed: ").append(String.format("%.2f", getTotalSpeed())).append("\n");
+
+        if (getTotalMaxMana() > 0) info.append("Mana: ").append(this.actuMana).append(" / ").append(getTotalMaxMana()).append("\n");
+        if (getTotalMagicPw() > 0) info.append("Magic Power: ").append(getTotalMagicPw()).append("\n");
+        if (getTotalMagicDefense() > 0) info.append("Magic Defense: ").append(getTotalMagicDefense()).append("\n");
+        if (getTotalCriticChance() > 0) info.append("Crit Chance: ").append((int)(getTotalCriticChance() * 100)).append("%\n");
+        if (getTotalDodge() > 0) info.append("Dodge: ").append((int)(getTotalDodge() * 100)).append("%\n");
+
         if (!this.equipmentMap.isEmpty()) {
             info.append("Equipment:\n");
             for (Equipment eq : this.equipmentMap.values()) {
@@ -407,8 +464,12 @@ public class Character implements Purchasable {
     public int getActuMana() {
         return actuMana;
     }
-    public void reduceMana(int manaCost){
+    public boolean reduceMana(int manaCost){
+        if (this.actuMana < manaCost) {
+            return false;
+        }
         this.actuMana -= manaCost;
+        return true;
     }
 
     public double getHpRegenerate() {

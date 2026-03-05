@@ -22,13 +22,10 @@ public class Equipment implements Purchasable{
     private double bonusDodgeChance;
     private double bonusHpRegen;
     private double bonusManaRegen;
-
     private double bonusLifesteal;
     private StatusEffect onHitEffect;
     private double onHitChance;
-    //--/
     private int price;
-    public Equipment(){}
 
     private Equipment(Builder builder){
         this.name = builder.name;
@@ -69,6 +66,8 @@ public class Equipment implements Purchasable{
         private double bonusHpRegen = 0;
         private double bonusManaRegen= 0;
         private double bonusLifesteal = 0.0;
+        private StatusEffect onHitEffect = null;
+        private double onHitChance = 0.0;
         private int price = 0;
 
         public Builder(String name, Slot slot){
@@ -91,11 +90,9 @@ public class Equipment implements Purchasable{
         public Builder bonusManaRegen(double bonusManaRegen) {this.bonusManaRegen = bonusManaRegen; return this;}
         public Builder lifesteal(double val) { this.bonusLifesteal = val; return this; }
         public Builder price(int price) {this.price = price; return this;}
-        public Builder onHitEffect(StatusEffect effect, double chance) {
-            this.onHitEffect = effect;
-            this.onHitChance = chance;
-            return this;
-        }
+        public Builder onHitEffect(StatusEffect effect) {this.onHitEffect = effect;return this;}
+        public Builder onHitEffect(double chance) {this.onHitChance = chance;return this;}
+
         public Equipment build(){
             return new Equipment(this);
         }
@@ -105,88 +102,48 @@ public class Equipment implements Purchasable{
         info.append("Name: ").append(name).append("\n");
         info.append("Description: ").append(description).append("\n");
         info.append("Usage: ").append(slot).append("\n");
-        if(getBonusHp()!=0) info.append("Bonus HP: ").append(getBonusHp()).append("\n");
-        if(getBonusDmg()!=0) info.append("Bonus DMG: ").append(getBonusDmg()).append("\n");
-        if(getBonusMaxMana()!=0) info.append("Bonus Max Mana: ").append(getBonusMaxMana()).append("\n");
-        if(getBonusMagicDmg()!=0) info.append("Bonus Magic DMG: ").append(getBonusMagicDmg()).append("\n");
-        if(getBonusDefense()!=0) info.append("Bonus Defense: ").append(getBonusDefense()).append("\n");
-        if(getBonusMagicDefense()!=0) info.append("Bonus Magic Defense: ").append(getBonusMagicDefense()).append("\n");
-        if(getBonusSpeed()!=0) info.append("Bonus Speed: ").append(getBonusSpeed()).append("\n");
-        if(getBonusCritChance()!=0) info.append("Bonus Crit Chance: ").append((getBonusCritChance())*100 + "%").append("\n");
-        if(getBonusCritDmg()!=0) info.append("Bonus Crit DMG: ").append(getBonusCritDmg()).append("\n");
-        if(getBonusDodgeChance()!=0) info.append("Bonus Dodge Chance: ").append(getBonusDodgeChance()).append("\n");
-        if(getBonusHpRegen()!=0) info.append("Bonus HP Regen: ").append(getBonusHpRegen()).append("\n");
-        if(getBonusManaRegen()!=0) info.append("Bonus Mana Regen: ").append(getBonusManaRegen()).append("\n");
-        if(getPrice() != 0) info.append("Price: ").append(getPrice()).append("\n");
+
+        if (getBonusHp() != 0) info.append("Bonus HP: ").append(getBonusHp()).append("\n");
+        if (getBonusMaxMana() != 0) info.append("Bonus Max Mana: ").append(getBonusMaxMana()).append("\n");
+        if (getBonusDmg() != 0) info.append("Bonus DMG: ").append(getBonusDmg()).append("\n");
+        if (getBonusMagicDmg() != 0) info.append("Bonus Magic DMG: ").append(getBonusMagicDmg()).append("\n");
+        if (getBonusDefense() != 0) info.append("Bonus Defense: ").append(getBonusDefense()).append("\n");
+        if (getBonusMagicDefense() != 0) info.append("Bonus Magic Defense: ").append(getBonusMagicDefense()).append("\n");
+        if (getBonusSpeed() != 0) info.append("Bonus Speed: ").append(getBonusSpeed()).append("\n");
+        if (getBonusCritChance() != 0) info.append("Bonus Crit Chance: ").append((int)(getBonusCritChance() * 100)).append("%\n");
+        if (getBonusCritDmg() != 0) info.append("Bonus Crit DMG: ").append((int)(getBonusCritDmg() * 100)).append("%\n");
+        if (getBonusDodgeChance() != 0) info.append("Bonus Dodge Chance: ").append((int)(getBonusDodgeChance() * 100)).append("%\n");
+        if (getBonusLifesteal() != 0) info.append("Bonus Lifesteal: ").append((int)(getBonusLifesteal() * 100)).append("%\n");
+        if (getBonusHpRegen() != 0) info.append("Bonus HP Regen: ").append(getBonusHpRegen()).append("\n");
+        if (getBonusManaRegen() != 0) info.append("Bonus Mana Regen: ").append(getBonusManaRegen()).append("\n");
+        if (getOnHitEffect() != null) {
+            info.append("On-Hit Effect: ").append(getOnHitEffect().getName())
+                    .append(" (").append((int)(getOnHitChance() * 100)).append("% chance)\n");
+        }
+        if (getPrice() != 0) info.append("Price: ").append(getPrice()).append("\n");
         return info.toString();
     }
 
-
     @Override
-    public int getPrice(){
-        return price;
-    }
-
-    public Slot getSlot() {
-        return slot;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public int getBonusMaxMana() {
-        return bonusMaxMana;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public int getBonusHp() {
-        return bonusHp;
-    }
-
-    public int getBonusDmg() {
-        return bonusDmg;
-    }
-
-    public int getBonusMagicDmg() {
-        return bonusMagicDmg;
-    }
-
-    public int getBonusDefense() {
-        return bonusDefense;
-    }
-
-    public int getBonusMagicDefense() {
-        return bonusMagicDefense;
-    }
-
-    public double getBonusSpeed() {
-        return bonusSpeed;
-    }
-
-    public double getBonusCritChance() {
-        return bonusCritChance;
-    }
-
-    public double getBonusCritDmg() {
-        return bonusCritDmg;
-    }
-
-
-    public double getBonusDodgeChance() {
-        return bonusDodgeChance;
-    }
-
-    public double getBonusHpRegen() {
-        return bonusHpRegen;
-    }
-
-    public double getBonusManaRegen() {
-        return bonusManaRegen;
-    }
+    public int getPrice() { return price; }
+    public Slot getSlot() { return slot; }
+    public String getName() { return name; }
+    public String getDescription() { return description; }
+    public int getBonusHp() { return bonusHp; }
+    public int getBonusMaxMana() { return bonusMaxMana; }
+    public int getBonusDmg() { return bonusDmg; }
+    public int getBonusMagicDmg() { return bonusMagicDmg; }
+    public int getBonusDefense() { return bonusDefense; }
+    public int getBonusMagicDefense() { return bonusMagicDefense; }
+    public double getBonusSpeed() { return bonusSpeed; }
+    public double getBonusCritChance() { return bonusCritChance; }
+    public double getBonusCritDmg() { return bonusCritDmg; }
+    public double getBonusDodgeChance() { return bonusDodgeChance; }
+    public double getBonusHpRegen() { return bonusHpRegen; }
+    public double getBonusManaRegen() { return bonusManaRegen; }
+    public double getBonusLifesteal() { return bonusLifesteal; }
+    public StatusEffect getOnHitEffect() { return onHitEffect; }
+    public double getOnHitChance() { return onHitChance; }
 }
 
 

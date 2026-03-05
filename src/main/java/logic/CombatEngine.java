@@ -61,7 +61,7 @@ public class CombatEngine {
                         break;
 
                     case CC:
-                        calculatedAmount = (int) effect.getDuration();
+                        calculatedAmount = effect.getDuration();
                         target.addStatusEffect(new StunEffect(effect.getName(), effect.getDuration()));
                         break;
 
@@ -92,6 +92,17 @@ public class CombatEngine {
                 reportBuilder.appliedEffect(effect);
             }
 
+            if (totalDamageToDeal > 0) {
+                for (Equipment eq : attacker.getEquipmentMap().values()) {
+                    if (eq.getOnHitEffect() != null) {
+                        if (Math.random() < eq.getOnHitChance()) {
+                            StatusEffect procEffect = eq.getOnHitEffect().copy();
+                            target.addStatusEffect(procEffect);
+                            reportBuilder.addAppliedEffect(procEffect);
+                        }
+                    }
+                }
+            }
             reportBuilder.isKill(!target.isAlive());
 
             return reportBuilder.build();

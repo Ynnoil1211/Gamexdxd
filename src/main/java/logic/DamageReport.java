@@ -1,5 +1,7 @@
 package logic;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class DamageReport {
@@ -14,6 +16,7 @@ public class DamageReport {
     private final boolean isKill;
     private final String abilityName;
     private final AbilityType type;
+    private List<StatusEffect> appliedEffects;
 
     private DamageReport(Builder builder) {
         this.attacker = builder.attacker;
@@ -27,6 +30,7 @@ public class DamageReport {
         this.isKill = builder.isKill;
         this.abilityName = builder.abilityName;
         this.type = builder.type;
+        this.appliedEffects = new ArrayList<>(builder.appliedEffects);
     }
 
     public static class Builder {
@@ -41,6 +45,7 @@ public class DamageReport {
         private boolean isKill = false;
         private String abilityName = "A wonderful name";
         private AbilityType type = AbilityType.OFFENSIVE;
+        private List<StatusEffect> appliedEffects = new ArrayList<>();
 
 
         public Builder(String attacker, String target) {
@@ -71,6 +76,12 @@ public class DamageReport {
         public Builder isKill(boolean isKill) { this.isKill = isKill; return this; }
         public Builder abilityName(String name) { this.abilityName = name; return this;}
         public Builder abilityType(AbilityType type) {this.type = type; return this;}
+        public Builder addAppliedEffect(StatusEffect effect) {
+            if (effect != null) {
+                this.appliedEffects.add(effect);
+            }
+            return this;
+        }
 
         public DamageReport build() {
             return new DamageReport(this);
@@ -113,12 +124,14 @@ public class DamageReport {
                 if (this.lifestealAmount > 0) {
                     log.append("Lifesteal: ").append(this.lifestealAmount).append("\n");
                 }
-                if (this.appliedEffect != null) {
-                    log.append("AFFLICTED: Target is suffering from ")
-                            .append(this.appliedEffect.getName())
-                            .append(" for ")
-                            .append(this.appliedEffect.getDuration())
-                            .append(" turns!\n");
+                if (!this.appliedEffects.isEmpty()) {
+                    for (StatusEffect effect : this.appliedEffects) {
+                        log.append("AFFLICTED: Target is suffering from ")
+                                .append(effect.getName())
+                                .append(" for ")
+                                .append(effect.getDuration())
+                                .append(" turns!\n");
+                    }
                 }
 
                 if (this.isKill) log.append("Result: KILLLLLLLEDDDDDD.\n");
