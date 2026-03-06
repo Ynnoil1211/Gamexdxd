@@ -388,7 +388,20 @@ public class Character implements Purchasable {
         //refreshes:
         this.actuHp = getTotalMaxHp();
         this.actuMana = getTotalMaxMana();
-        //if(this.currenJob != null && currentJob.getSkillUnlockedAtLevel(this.level)!=null){}
+        if (this.currentJob != null) {
+            SkillTemplate.Ability newSkill = this.currentJob.unlockAbilityDueToLevel(this.level);
+            if (newSkill != null) {
+                System.out.println(this.name + " learned a new skill: " + newSkill.getName() + "!");
+                this.unlockAbilities.add(newSkill);
+                for (int i = 0; i < this.activeAbilities.length; i++) {
+                    if (this.activeAbilities[i] == null) {
+                        this.activeAbilities[i] = newSkill;
+                        System.out.println("-> Automatically equipped " + newSkill.getName() + " to Slot " + (i + 1) + "!");
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     public Character clon() {
