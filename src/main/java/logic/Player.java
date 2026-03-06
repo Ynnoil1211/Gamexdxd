@@ -1,11 +1,10 @@
 package logic;
-import vista.*;
 import java.util.ArrayList;
 
 public class Player {
     private String name;
     private Wallet wallet;
-    private ArrayList<Character> ownedHeroes;
+    private ArrayList<Person> ownedHeroes;
     private ArrayList<Equipment> equipmentInventory;
     private ArrayList<Item> itemInventory;
     public Player(String name){
@@ -24,7 +23,7 @@ public class Player {
         return equipmentInventory;
     }
 
-    public ArrayList<Character> getOwnedHeroes() {
+    public ArrayList<Person> getOwnedHeroes() {
         return ownedHeroes;
     }
 
@@ -53,12 +52,12 @@ public class Player {
     }
     public void showHeroes(){
         for (int i = 0; i < getOwnedHeroes().size(); i++){
-            Character ch = getOwnedHeroes().get(i);
+            Person ch = getOwnedHeroes().get(i);
             System.out.print(i+1 + " ");
             System.out.println(ch.getCharacterInfo());
         }
     }
-    public void addHero(Character hero){
+    public void addHero(Person hero){
         this.ownedHeroes.add(hero.clon());
 //        this.ownedHeroes.add(hero);
         System.out.println("Success: " + hero.getName() + " has joined your party");

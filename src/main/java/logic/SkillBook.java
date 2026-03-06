@@ -3,8 +3,8 @@ package logic;
 public class SkillBook {
     public static SkillTemplate.BaseAttack createStrike(Job.JobType job) {
         return new SkillTemplate.BaseAttack.Builder("Heavy Strike", 1, job)
-                .manaCost(20)
-                .addmultiplier(DamageType.PHYSICAL, 1.5)
+                .manaCost(0)
+                .addmultiplier(DamageType.PHYSICAL, 2)
                 .targetBox(new boolean[]{true, true, false, false})
                 .launchBox(new boolean[]{true, true, false, false})
                 .abilityType(AbilityType.OFFENSIVE)

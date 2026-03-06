@@ -2,7 +2,7 @@ package logic;
 
 import java.util.*;
 
-public class Character implements Purchasable {
+public class Person implements Purchasable {
     private String name;
     private int actuHp, maxiHp, maxMana, actuMana, basePw, baseMagicPw, baseDefense, baseMagicDefense;
     private double hpRegenerate, manaRegenerate, criticChance, criticDamage, dodge, speed;
@@ -15,7 +15,7 @@ public class Character implements Purchasable {
     private final boolean isEnemy;
     private int price;
     //---//
-    private Character(Builder builder){
+    private Person(Builder builder){
         this.name = builder.name;
         this.maxiHp = builder.maxiHp;
         this.actuHp = builder.maxiHp;
@@ -38,12 +38,13 @@ public class Character implements Purchasable {
         this.exp = builder.exp;
         this.activeAbilities = builder.activeAbilities;
         this.unlockAbilities = builder.unlockAbilities;
+        this.currentJob = builder.currentJob;
     }
     //---//
     public static class Builder{
         private String name;
         private int maxiHp = 500;
-        private int maxMana = 0;
+        private int maxMana = 20;
         private double hpRegenerate = 0.02;
         private double manaRegenerate = 0.02;
         private int basePw = 50;
@@ -108,8 +109,8 @@ public class Character implements Purchasable {
             this.activeAbilities = active.clone();
             return this;
         }
-        public Character build() {
-            return new Character(this);
+        public Person build() {
+            return new Person(this);
         }
 
     }
@@ -124,7 +125,7 @@ public class Character implements Purchasable {
         this.activeEffects.clear();
     }
 
-    public void attack(int skillSlot, List<Character> enemies) {
+    public void attack(int skillSlot, List<Person> enemies) {
         int index = skillSlot - 1;
         if (index >= 0 && index < 4 && this.activeAbilities[index] != null) {
             SkillTemplate.Ability chosenAbility = this.activeAbilities[index];
@@ -404,7 +405,7 @@ public class Character implements Purchasable {
         }
     }
 
-    public Character clon() {
+    public Person clon() {
         SkillTemplate.Ability[] cloneActive = new SkillTemplate.Ability[4];
         for(int i = 0; i < 4; i++){
             cloneActive[i] = (this.activeAbilities[i].copy());

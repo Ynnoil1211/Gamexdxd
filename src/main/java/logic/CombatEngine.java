@@ -6,7 +6,7 @@ public class CombatEngine {
     private static final double PHYS_BONUS_MULT = 1.015;
     private static final double MAGIC_BONUS_MULT = 1.030;
 
-    public static DamageReport calculateDmg(Character attacker, Character target, SkillTemplate.Ability ability) {
+    public static DamageReport calculateDmg(Person attacker, Person target, SkillTemplate.Ability ability) {
         boolean isDodged = Math.random() < target.getTotalDodge();
         DamageReport.Builder reportBuilder = new DamageReport.Builder(attacker.getName(), target.getName())
                 .abilityName(ability.getName())

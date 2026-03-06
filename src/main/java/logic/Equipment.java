@@ -1,7 +1,7 @@
 package logic;
-import vista.*;
+
 interface Special{
-    Special specialAction(Character target);
+    Special specialAction(Person target);
 }
 public class Equipment implements Purchasable{
     public enum Slot{

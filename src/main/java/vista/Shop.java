@@ -1,14 +1,14 @@
 package vista;
 import logic.*;
-import logic.Character;
+import logic.Person;
 import java.util.ArrayList;
 
 public class Shop {
-    private ArrayList<Character> catalogHeroes;
+    private ArrayList<Person> catalogHeroes;
     private ArrayList<Equipment> catalogEquipments;
     private ArrayList<Item> catalogItems;
     public Shop(){}
-    public Shop(ArrayList<Character> catalogHeroes, ArrayList<Equipment> catalogEquipments, ArrayList<Item> catalogItems){
+    public Shop(ArrayList<Person> catalogHeroes, ArrayList<Equipment> catalogEquipments, ArrayList<Item> catalogItems){
         this.catalogEquipments = catalogEquipments;
         this.catalogHeroes = catalogHeroes;
         this.catalogItems = catalogItems;
@@ -16,7 +16,7 @@ public class Shop {
 
     public void showHeroesCatalog() {
         System.out.println("--- HEROES CATALOG ---");
-        for (Character hero : catalogHeroes) {
+        for (Person hero : catalogHeroes) {
             System.out.println(hero.getCharacterInfo());
         }
     }
@@ -39,7 +39,7 @@ public class Shop {
 
     public void buyHero(Player player, int index) {
         if (index >= 0 && index < catalogHeroes.size()) {
-            Character hero = catalogHeroes.get(index);
+            Person hero = catalogHeroes.get(index);
             if (player.getWallet().deductBalance(hero.getPrice())) {
                 player.addHero(hero);
             }

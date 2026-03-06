@@ -25,7 +25,7 @@ public class Job {
 
     public Job(JobType jobType){
         this.jobType = jobType;
-        this.currentStack=0;
+        this.currentStack=1;
         this.unlockSkills = Learnset.getTreeForJob(jobType);
     }
     public SkillTemplate.Ability unlockAbilityDueToLevel(int level) {

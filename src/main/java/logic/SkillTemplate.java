@@ -4,7 +4,7 @@ import java.util.*;
 
 public class SkillTemplate {
     public static interface Ability {
-        List<DamageReport> execute(Character attacker, List<Character> targets);
+        List<DamageReport> execute(Person attacker, List<Person> targets);
 
         Ability copy();
 
@@ -121,7 +121,7 @@ public class SkillTemplate {
 
 
         @Override
-        public List<DamageReport> execute(Character self, List<Character> targets) {
+        public List<DamageReport> execute(Person self, List<Person> targets) {
             List<DamageReport> finalReports = new ArrayList<>();
             if (self.getCurrentJob() == null || self.getCurrentJob().getJobType() != this.requiredJob) {
                 System.out.println("Wrong job class to use this ability!");
@@ -138,7 +138,7 @@ public class SkillTemplate {
             if (this.manaCost > 0) self.reduceMana(this.manaCost);
             if (this.stackCost > 0) self.getCurrentJob().consumeStack(this.stackCost);
 
-            for (Character enemy : targets) {
+            for (Person enemy : targets) {
                 DamageReport report = CombatEngine.calculateDmg(self, enemy, this);
                 finalReports.add(report);
             }

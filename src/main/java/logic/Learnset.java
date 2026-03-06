@@ -18,7 +18,7 @@ public class Learnset {
                 .manaCost(0)
                 .stackGain(2) // Gains 2 stacks!
                 .abilityType(AbilityType.OFFENSIVE)
-                .addmultiplier(DamageType.PHYSICAL, 0.8)
+                .addmultiplier(DamageType.PHYSICAL, 1.0)
                 .build());
 
         // Level 5: Consume stacks for huge AoE

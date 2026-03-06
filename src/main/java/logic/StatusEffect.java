@@ -20,17 +20,17 @@ public abstract class StatusEffect {
         this.isDmgHealing = false;
     }
 
-    public void onApply(Character target) {
+    public void onApply(Person target) {
         System.out.println(target.getName() + " is affected by " + name + "!");
     }
 
-    public abstract void onTick(Character target);
+    public abstract void onTick(Person target);
 
-    public void onRemove(Character target) {
+    public void onRemove(Person target) {
         System.out.println(name + " fades from " + target.getName() + ".");
     }
 
-    public boolean tick(Character target) {
+    public boolean tick(Person target) {
         if (duration <= 0) return true; // Expired
 
         onTick(target); //Apply
@@ -75,7 +75,7 @@ class PoisonEffect extends StatusEffect {
     }
 
     @Override
-    public void onTick(Character target) {
+    public void onTick(Person target) {
         System.out.println(target.getName() + " suffers " + power + " poison damage.");
         target.receiveDmg(power);
     }
@@ -99,7 +99,7 @@ class BleedEffect extends StatusEffect {
     }
 
     @Override
-    public void onTick(Character target) {
+    public void onTick(Person target) {
         System.out.println(target.getName() + " suffers " + power + " bleed damage.");
         target.receiveDmg(power);
     }
@@ -126,7 +126,7 @@ class BleedEffect extends StatusEffect {
     }
 
     @Override
-    public void onTick(Character target) {
+    public void onTick(Person target) {
         System.out.println(target.getName() + " cannot move!");
     }
 
