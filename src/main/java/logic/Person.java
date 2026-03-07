@@ -12,6 +12,7 @@ public class Person implements Purchasable {
     private SkillTemplate.Ability[] activeAbilities = new SkillTemplate.Ability[4];
     private final List<StatusEffect> activeEffects = new ArrayList<>();
     private Map<Equipment.Slot, Equipment> equipmentMap;
+    private int rank;
     private final boolean isEnemy;
     private int price;
     //---//
@@ -36,6 +37,7 @@ public class Person implements Purchasable {
         this.price = builder.price;
         this.level = builder.level;
         this.exp = builder.exp;
+        this.rank = builder.rank;
         this.activeAbilities = builder.activeAbilities;
         this.unlockAbilities = builder.unlockAbilities;
         this.currentJob = builder.currentJob;
@@ -61,6 +63,7 @@ public class Person implements Purchasable {
         private List<SkillTemplate.Ability> unlockAbilities = new ArrayList<>();
         private SkillTemplate.Ability[] activeAbilities = new SkillTemplate.Ability[4]; //not initialized yet.
         private boolean isEnemy = false;
+        private int rank = 0;
         private int price = 0;
 
         public Builder(String name){
@@ -83,6 +86,7 @@ public class Person implements Purchasable {
         public Builder price(int price) { this.price = price; return this; }
         public Builder level(int level) { this.level = level; return this; }
         public Builder exp(int exp) { this.exp = exp; return this;}
+        public Builder rank(int rank) {this.rank = rank; return this;}
         public Builder currentJob(Job job) { this.currentJob = job; return this;}
         public Builder equipment(Equipment equip) {
             if (equip != null) {
@@ -117,6 +121,20 @@ public class Person implements Purchasable {
 
     public boolean isAlive(){
         return actuHp>0;
+    }
+
+    public int getRank() {return this.rank;}
+
+    public void setRank(int newRank){
+        if(newRank >= 0 && newRank <4){
+            this.rank = rank;
+        } else{
+            System.out.println("Invalid rank assigned to " + this.getName());
+        }
+        //when initializing a party, need to set their rank...
+        //for (int i = 0; i < enemies.size(); i++) {
+        //    enemies.get(i).setRank(i);
+        //}
     }
 
     public void handleDeath(){
@@ -184,37 +202,44 @@ public class Person implements Purchasable {
         return total;
     }
     public int getTotalMaxHp() {
-        int total = this.maxiHp;
+        int baseJobHp = (currentJob != null) ? (int)(this.maxiHp * currentJob.getJobType().getHpMult()) : this.maxiHp;
+        int total = baseJobHp;
         for (Equipment eq : equipmentMap.values()) total += eq.getBonusHp();
         return Math.max(1, getEffectiveStat(StatType.MAX_HP, total));
     }
 
     public int getTotalMaxMana() {
-        int total = this.maxMana;
+        int baseJobMana = (currentJob != null) ? (int)(this.maxMana * currentJob.getJobType().getManaMult()) : this.maxMana;
+        int total = baseJobMana;
         for (Equipment eq : equipmentMap.values()) total += eq.getBonusMaxMana();
         return Math.max(0, getEffectiveStat(StatType.MAX_MANA, total));
     }
 
+
     public int getTotalPw() {
-        int total = this.basePw;
+        int baseJobPhys = (currentJob != null) ? (int)(this.basePw * currentJob.getJobType().getPhysMult()) : this.basePw;
+        int total = baseJobPhys;
         for (Equipment eq : equipmentMap.values()) total += eq.getBonusDmg();
         return Math.max(0, getEffectiveStat(StatType.POWER, total));
     }
 
     public int getTotalMagicPw() {
-        int total = this.baseMagicPw;
+        int baseJobMag = (currentJob != null) ? (int)(this.baseMagicPw * currentJob.getJobType().getMagMult()) : this.baseMagicPw;
+        int total = baseJobMag;
         for (Equipment eq : equipmentMap.values()) total += eq.getBonusMagicDmg();
         return Math.max(0, getEffectiveStat(StatType.MAGIC_POWER, total));
     }
 
     public int getTotalDefense() {
-        int total = this.baseDefense;
+        int baseJobDef = (currentJob != null) ? (int)(this.baseDefense * currentJob.getJobType().getDefMult()) : this.baseDefense;
+        int total = baseJobDef;
         for (Equipment eq : equipmentMap.values()) total += eq.getBonusDefense();
         return Math.max(0, getEffectiveStat(StatType.DEFENSE, total));
     }
 
     public int getTotalMagicDefense() {
-        int total = this.baseMagicDefense;
+        int baseJobMagDef = (currentJob != null) ? (int)(this.baseMagicDefense * currentJob.getJobType().getMagicDefMult()) : this.baseMagicDefense;
+        int total = baseJobMagDef;
         for (Equipment eq : equipmentMap.values()) total += eq.getBonusMagicDefense();
         return Math.max(0, getEffectiveStat(StatType.MAGIC_DEFENSE, total));
     }
@@ -242,7 +267,8 @@ public class Person implements Purchasable {
     }
 
     public double getTotalCriticChance() {
-        double total = this.criticChance;
+        double jobCritBonus = (currentJob != null) ? currentJob.getJobType().getFlatCritBonus() : 0.0;
+        double total = this.criticChance + jobCritBonus;
         for (Equipment eq : equipmentMap.values()) total += eq.getBonusCritChance();
         double effectMod = getEffectModSum(StatType.CRIT_CHANCE) / 100.0;
         return Math.max(0.0, total + effectMod);
@@ -256,18 +282,18 @@ public class Person implements Purchasable {
     }
 
     public double getTotalDodge(){
-        double total = this.dodge;
+        double baseJobDodge = (currentJob != null) ? (this.dodge * currentJob.getJobType().getDodgeMult()) : this.dodge;
+        double total = baseJobDodge;
         for (Equipment eq : equipmentMap.values()) total += eq.getBonusDodgeChance();
-
         double effectMod = getEffectModSum(StatType.DODGE) / 100.0;
-        return Math.min(0.90, Math.max(0.0, total + effectMod)); // Cap dodge at 90% so characters aren't invincible
+        return Math.max(0.0, total + effectMod);
     }
 
     public double getTotalSpeed() {
-        double total = this.speed;
+        double baseJobSpeed = (currentJob != null) ? (this.speed * currentJob.getJobType().getSpeedMult()) : this.speed;
+        double total = baseJobSpeed;
         for (Equipment eq : equipmentMap.values()) total += eq.getBonusSpeed();
-
-        int effectMod = getEffectModSum(StatType.SPEED);
+        double effectMod = getEffectModSum(StatType.SPEED) / 100.0;
         return Math.max(0.0, total + effectMod);
     }
 
